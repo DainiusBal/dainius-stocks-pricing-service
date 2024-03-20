@@ -11,7 +11,7 @@ public class Price {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "price_id")
-    private String priceId;
+    private Long priceId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id")
@@ -29,16 +29,24 @@ public class Price {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Transient
-    private LocalDate fromDate;
 
-    @Transient
-    private LocalDate toDate;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
 
     // Getters and setters
 
 
-    public String getPriceId() {
+    public Long getPriceId() {
         return priceId;
     }
 
@@ -62,15 +70,8 @@ public class Price {
         return updatedAt;
     }
 
-    public LocalDate getFromDate() {
-        return fromDate;
-    }
 
-    public LocalDate getToDate() {
-        return toDate;
-    }
-
-    public void setPriceId(String priceId) {
+    public void setPriceId(Long priceId) {
         this.priceId = priceId;
     }
 
@@ -94,11 +95,5 @@ public class Price {
         this.updatedAt = updatedAt;
     }
 
-    public void setFromDate(LocalDate fromDate) {
-        this.fromDate = fromDate;
-    }
 
-    public void setToDate(LocalDate toDate) {
-        this.toDate = toDate;
-    }
 }

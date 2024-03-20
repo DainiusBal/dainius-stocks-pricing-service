@@ -5,6 +5,7 @@ import com.balionis.dainius.sps.model.Price;
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,35 +25,50 @@ public class StockController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addOrUpdateStock(@RequestBody Stock stock) {
-        Stock createdOrUpdatedStock = stockService.addOrUpdateStock(stock);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdOrUpdatedStock);
+    public ResponseEntity<?> addStock(@RequestBody Stock stock) {
+        Stock createdStock = stockService.addOrUpdateStock(stock);
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
+    }
+
+    @PostMapping("/{ticker}")
+    public ResponseEntity<?> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
+        Stock updatedStock = stockService.updateStock(ticker, stock);
+        return ResponseEntity.ok(updatedStock);
     }
 
     @GetMapping
-    public ResponseEntity<?> findStocks(@RequestParam(required = false) String ticker) {
+    public ResponseEntity<?> getStocks(@RequestParam(required = false) String ticker) {
+        List<Stock> stocks;
         if (ticker == null || ticker.isEmpty()) {
-            return ResponseEntity.ok(stockService.getAllStocks());
+            stocks = stockService.getAllStocks();
         } else {
-            return ResponseEntity.ok(stockService.findStocksByTicker(ticker));
+            stocks = stockService.findStocksByTicker(ticker);
+        }
+        if (stocks.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No stocks found");
+        } else {
+            return ResponseEntity.ok(stocks);
         }
     }
 
     @PostMapping("/{ticker}/prices")
-    public ResponseEntity<?> addOrUpdatePrice(@PathVariable String ticker,
-                                              @RequestBody PriceRequest request) {
-        stockService.addOrUpdatePrice(ticker, request.getPrice(), request.getDate());
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<?> addPrice(@PathVariable String ticker, @RequestBody PriceRequest request) {
+        try {
+            stockService.addOrUpdatePrice(ticker, request.getPrice(), request.getDate());
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to add price: " + e.getMessage());
+        }
     }
 
     @GetMapping("/{ticker}/prices")
-    public ResponseEntity<?> getPriceHistory(@PathVariable String ticker,
-                                             @RequestParam LocalDate fromDate,
-                                             @RequestParam LocalDate toDate) {
+    public ResponseEntity<List<Price>> getPrices(
+            @PathVariable String ticker,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
         List<Price> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }
-
-
 }
+
 

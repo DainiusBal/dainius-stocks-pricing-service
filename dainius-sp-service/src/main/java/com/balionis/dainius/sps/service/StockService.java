@@ -9,9 +9,9 @@ import java.util.List;
 
 public interface StockService {
     Stock addOrUpdateStock(Stock stock);
+    Stock updateStock(String ticker, Stock stock);
     List<Stock> findStocksByTicker(String ticker);
     List<Stock> getAllStocks();
-    // Updated methods for managing stock prices
     void addOrUpdatePrice(String ticker, BigDecimal price, LocalDate date);
     List<Price> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate);
 }

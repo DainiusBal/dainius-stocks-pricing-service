@@ -30,6 +30,17 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
+    public Stock updateStock(String ticker, Stock stock) {
+        Stock existingStock = stockRepository.findByTicker(ticker);
+        if (existingStock == null) {
+            throw new RuntimeException("Stock with ticker " + ticker + " not found");
+        }
+        existingStock.setDescription(stock.getDescription());
+        existingStock.setSharesOutstanding(stock.getSharesOutstanding());
+        return stockRepository.save(existingStock);
+    }
+
+    @Override
     public List<Stock> getAllStocks() {
         return stockRepository.findAll();
     }
@@ -41,31 +52,28 @@ public class StockServiceImpl implements StockService {
             Price price = new Price();
             price.setStock(stock);
             price.setPriceValue(priceValue);
-            price.setPricingDate(date);  // Set the pricingDate directly
+            price.setPricingDate(date);
             priceRepository.save(price);
         } else {
-            throw new IllegalArgumentException("Unknown ticker: " + ticker);
+            throw new RuntimeException("Unknown ticker: " + ticker);
         }
     }
 
     @Override
     public List<Price> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate) {
-        // First, find the stock by its ticker
         Stock stock = stockRepository.findByTicker(ticker);
         if (stock != null) {
-            // If the stock is found, get its ID
             Long stockId = stock.getStockId();
-            // Then, use the repository method to find prices for that stock within the specified date range
             return priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
         } else {
-            // If the stock is not found, return an empty list or handle the error as needed
             return Collections.emptyList();
         }
     }
 
     @Override
     public List<Stock> findStocksByTicker(String ticker) {
-        // Use the repository method to find stocks by ticker containing the specified substring
         return stockRepository.findByTickerContaining(ticker);
     }
 }
+
+
