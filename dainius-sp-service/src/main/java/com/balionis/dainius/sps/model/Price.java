@@ -2,42 +2,103 @@ package com.balionis.dainius.sps.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import javax.persistence.*;
 
+@Entity
+@Table(name = "prices")
 public class Price {
-    private String ticker;
-    private BigDecimal price;
-    private LocalDate date;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "price_id")
+    private String priceId;
 
-    public String getTicker() {
-        return ticker;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_id")
+    private Stock stock;
+
+    @Column(name = "pricing_date")
+    private LocalDate pricingDate;
+
+    @Column(name = "price")
+    private BigDecimal priceValue;
+
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Transient
+    private LocalDate fromDate;
+
+    @Transient
+    private LocalDate toDate;
+
+    // Getters and setters
+
+
+    public String getPriceId() {
+        return priceId;
     }
 
-    public void setTicker(String ticker) {
-        this.ticker = ticker;
+    public Stock getStock() {
+        return stock;
     }
 
-    public BigDecimal getPrice() {
-        return price;
+    public LocalDate getPricingDate() {
+        return pricingDate;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public BigDecimal getPriceValue() {
+        return priceValue;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
     }
 
-    @Override
-    public String toString() {
-        return "Price{" +
-                "ticker='" + ticker + '\'' +
-                ", price=" + price +
-                ", date=" + date +
-                '}';
+    public LocalDate getFromDate() {
+        return fromDate;
+    }
+
+    public LocalDate getToDate() {
+        return toDate;
+    }
+
+    public void setPriceId(String priceId) {
+        this.priceId = priceId;
+    }
+
+    public void setStock(Stock stock) {
+        this.stock = stock;
+    }
+
+    public void setPricingDate(LocalDate pricingDate) {
+        this.pricingDate = pricingDate;
+    }
+
+    public void setPriceValue(BigDecimal priceValue) {
+        this.priceValue = priceValue;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public void setFromDate(LocalDate fromDate) {
+        this.fromDate = fromDate;
+    }
+
+    public void setToDate(LocalDate toDate) {
+        this.toDate = toDate;
     }
 }

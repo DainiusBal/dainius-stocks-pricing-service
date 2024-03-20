@@ -2,72 +2,70 @@ package com.balionis.dainius.sps.service;
 
 import com.balionis.dainius.sps.model.Price;
 import com.balionis.dainius.sps.model.Stock;
+import com.balionis.dainius.sps.repository.StockRepository;
+import com.balionis.dainius.sps.repository.PriceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
-import java.util.ArrayList;
-
 
 @Service
 public class StockServiceImpl implements StockService {
 
-    // For the sake of this example, let's assume we have an in-memory list to store stocks
-    private List<Stock> stocks = new ArrayList<>();
+    private final StockRepository stockRepository;
+    private final PriceRepository priceRepository;
+
+    @Autowired
+    public StockServiceImpl(StockRepository stockRepository, PriceRepository priceRepository) {
+        this.stockRepository = stockRepository;
+        this.priceRepository = priceRepository;
+    }
 
     @Override
     public Stock addOrUpdateStock(Stock stock) {
-        // Check if the stock already exists in the list
-        Stock existingStock = findStockByTicker(stock.getTicker());
-        if (existingStock != null) {
-            // Update the existing stock
-            existingStock.setDescription(stock.getDescription());
-            existingStock.setSharesOutstanding(stock.getSharesOutstanding());
-            return existingStock;
-        } else {
-            // Add the new stock to the list
-            stocks.add(stock);
-            return stock;
-        }
+        return stockRepository.save(stock);
     }
 
     @Override
     public List<Stock> getAllStocks() {
-        // Return all stocks in the list
-        return stocks;
+        return stockRepository.findAll();
     }
 
     @Override
-    public void addOrUpdatePrice(String ticker, double price, String date) {
-
+    public void addOrUpdatePrice(String ticker, BigDecimal priceValue, LocalDate date) {
+        Stock stock = stockRepository.findByTicker(ticker);
+        if (stock != null) {
+            Price price = new Price();
+            price.setStock(stock);
+            price.setPriceValue(priceValue);
+            price.setPricingDate(date);  // Set the pricingDate directly
+            priceRepository.save(price);
+        } else {
+            throw new IllegalArgumentException("Unknown ticker: " + ticker);
+        }
     }
 
     @Override
-    public List<Price> getPriceHistory(String ticker, String fromDate, String toDate) {
-        return null;
+    public List<Price> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate) {
+        // First, find the stock by its ticker
+        Stock stock = stockRepository.findByTicker(ticker);
+        if (stock != null) {
+            // If the stock is found, get its ID
+            Long stockId = stock.getStockId();
+            // Then, use the repository method to find prices for that stock within the specified date range
+            return priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
+        } else {
+            // If the stock is not found, return an empty list or handle the error as needed
+            return Collections.emptyList();
+        }
     }
 
     @Override
     public List<Stock> findStocksByTicker(String ticker) {
-        // Find stocks in the list that match the given ticker
-        List<Stock> matchingStocks = new ArrayList<>();
-        for (Stock stock : stocks) {
-            if (stock.getTicker().startsWith(ticker)) {
-                matchingStocks.add(stock);
-            }
-        }
-        return matchingStocks;
+        // Use the repository method to find stocks by ticker containing the specified substring
+        return stockRepository.findByTickerContaining(ticker);
     }
-
-    // Helper method to find a stock by ticker
-    private Stock findStockByTicker(String ticker) {
-        for (Stock stock : stocks) {
-            if (stock.getTicker().equals(ticker)) {
-                return stock;
-            }
-        }
-        return null; // Stock not found
-    }
-
-    // Implement additional methods as needed
 }
-
