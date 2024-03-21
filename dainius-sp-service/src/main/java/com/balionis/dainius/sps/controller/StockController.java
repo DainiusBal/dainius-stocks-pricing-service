@@ -26,14 +26,13 @@ public class StockController {
 
     @PostMapping
     public ResponseEntity<?> addStock(@RequestBody Stock stock) {
-        // Check if stock with the same ticker already exists
+
         List<Stock> existingStocks = stockService.findStocksByTicker(stock.getTicker());
         if (!existingStocks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A stock with ticker '" + stock.getTicker() + "' already exists.");
         }
 
-        // If no existing stock with the same ticker, proceed to addOrUpdateStock
         Stock createdStock = stockService.addOrUpdateStock(stock);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
     }
@@ -47,7 +46,7 @@ public class StockController {
     @GetMapping
     public ResponseEntity<?> getStocks(@RequestParam(required = false) String ticker) {
         List<Stock> stocks;
-        if (ticker == null || ticker.isEmpty()) {
+        if (ticker == null || ticker.isEmpty() || ticker.equals("*")) {
             stocks = stockService.getAllStocks();
         } else {
             stocks = stockService.findStocksByTicker(ticker);
@@ -70,10 +69,16 @@ public class StockController {
     }
 
     @GetMapping("/{ticker}/prices")
-    public ResponseEntity<List<Price>> getPrices(
+    public ResponseEntity<?> getPrices(
             @PathVariable String ticker,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
+        List<Stock> existingStocks = stockService.findStocksByTicker(ticker);
+        if (existingStocks.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Stock with ticker '" + ticker + "' not found.");
+        }
+
         List<Price> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }

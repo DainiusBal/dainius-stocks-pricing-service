@@ -17,10 +17,6 @@ class DainiusStocksPricingServiceApplicationTests {
 	void contextLoads() {
 		// Verify that the ApplicationContext is not null
 		assertNotNull(applicationContext, "ApplicationContext should not be null");
-
-		// You can add more assertions to verify specific beans or conditions in the context
-		// For example:
-		// assertTrue(applicationContext.containsBean("myBean"), "myBean should be present in the context");
 	}
 
 }

@@ -43,7 +43,6 @@ public class Price {
     }
 
 
-    // Getters and setters
 
 
     public Long getPriceId() {
