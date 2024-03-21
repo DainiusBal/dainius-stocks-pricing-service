@@ -26,6 +26,14 @@ public class StockController {
 
     @PostMapping
     public ResponseEntity<?> addStock(@RequestBody Stock stock) {
+        // Check if stock with the same ticker already exists
+        List<Stock> existingStocks = stockService.findStocksByTicker(stock.getTicker());
+        if (!existingStocks.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("A stock with ticker '" + stock.getTicker() + "' already exists.");
+        }
+
+        // If no existing stock with the same ticker, proceed to addOrUpdateStock
         Stock createdStock = stockService.addOrUpdateStock(stock);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
     }

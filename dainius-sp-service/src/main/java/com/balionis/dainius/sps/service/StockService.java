@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface StockService {
+
     Stock addOrUpdateStock(Stock stock);
     Stock updateStock(String ticker, Stock stock);
     List<Stock> findStocksByTicker(String ticker);
