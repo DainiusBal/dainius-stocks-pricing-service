@@ -7,6 +7,10 @@ import org.springframework.context.ApplicationContext;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import org.springframework.test.context.ActiveProfiles;
+
+
+@ActiveProfiles("test")
 @SpringBootTest
 class DainiusStocksPricingServiceApplicationTests {
 

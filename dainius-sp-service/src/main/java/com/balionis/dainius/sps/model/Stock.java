@@ -31,6 +31,7 @@ public class Stock {
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<Price> prices = new ArrayList<>();
 
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
