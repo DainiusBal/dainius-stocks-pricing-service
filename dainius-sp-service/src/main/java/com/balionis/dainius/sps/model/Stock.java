@@ -11,7 +11,7 @@ public class Stock {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "stock_id")
-    private Long id; // Rename stockId to id
+    private Long id;
 
     @Column(name = "ticker")
     private String ticker;
@@ -27,6 +27,15 @@ public class Stock {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public Stock() {
+    }
+
+    public Stock(String ticker, String description, int sharesOutstanding) {
+        this.ticker = ticker;
+        this.description = description;
+        this.sharesOutstanding = sharesOutstanding;
+    }
 
     @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
     private List<Price> prices = new ArrayList<>();

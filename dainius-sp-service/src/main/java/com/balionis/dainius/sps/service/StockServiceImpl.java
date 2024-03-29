@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 
+
 @Service
 public class StockServiceImpl implements StockService {
 
@@ -29,16 +30,32 @@ public class StockServiceImpl implements StockService {
         return stockRepository.save(stock);
     }
 
+
     @Override
-    public Stock updateStock(String ticker, Stock stock) {
+    public Stock updateStock(String ticker, Stock updatedStock) {
+        System.out.println("Updating stock for ticker: " + ticker);
+
         Stock existingStock = stockRepository.findByTicker(ticker);
+        System.out.println("Existing stock: " + existingStock);
+
         if (existingStock == null) {
             throw new RuntimeException("Stock with ticker " + ticker + " not found");
         }
-        existingStock.setDescription(stock.getDescription());
-        existingStock.setSharesOutstanding(stock.getSharesOutstanding());
-        return stockRepository.save(existingStock);
+
+        existingStock.setDescription(updatedStock.getDescription());
+        existingStock.setSharesOutstanding(updatedStock.getSharesOutstanding());
+        System.out.println("Updated stock: " + existingStock);
+
+
+        try {
+            Stock savedStock = stockRepository.save(existingStock);
+            System.out.println("Stock updated successfully: " + savedStock);
+            return savedStock;
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to update stock with ticker " + ticker, e);
+        }
     }
+
 
     @Override
     public List<Stock> getAllStocks() {
@@ -59,16 +76,22 @@ public class StockServiceImpl implements StockService {
         }
     }
 
+
     @Override
     public List<Price> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate) {
+
         Stock stock = stockRepository.findByTicker(ticker);
+
         if (stock != null) {
             Long stockId = stock.getStockId();
-            return priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
+            List<Price> prices = priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
+            return prices;
         } else {
             return Collections.emptyList();
         }
     }
+
+
 
     @Override
     public List<Stock> findStocksByTicker(String ticker) {

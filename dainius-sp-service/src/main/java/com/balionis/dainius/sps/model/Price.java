@@ -29,7 +29,15 @@ public class Price {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    public Price(){
+    }
 
+    public Price(BigDecimal priceValue, LocalDate pricingDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+        this.priceValue = priceValue;
+        this.pricingDate = pricingDate;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
 
     @PrePersist
     protected void onCreate() {

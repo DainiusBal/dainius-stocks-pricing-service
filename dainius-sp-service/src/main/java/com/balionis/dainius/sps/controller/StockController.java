@@ -38,7 +38,7 @@ public class StockController {
     }
 
     @PostMapping("/{ticker}")
-    public ResponseEntity<?> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
+    public ResponseEntity<Stock> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
         Stock updatedStock = stockService.updateStock(ticker, stock);
         return ResponseEntity.ok(updatedStock);
     }
@@ -82,6 +82,7 @@ public class StockController {
         List<Price> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }
+
 }
 
 

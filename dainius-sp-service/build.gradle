@@ -27,6 +27,10 @@ dependencies {
 	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
 	testImplementation 'io.rest-assured:rest-assured:4.4.0'
 	testImplementation 'org.springframework:spring-test'
+	testImplementation 'org.mock-server:mockserver-netty:5.11.2'
+	testImplementation 'org.mock-server:mockserver-client-java:5.11.2'
+
+
 }
 
 
