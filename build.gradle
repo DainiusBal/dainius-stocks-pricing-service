@@ -1,0 +1,81 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '2.7.0'
+	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'jacoco'
+	id 'org.liquibase.gradle' version '2.2.1'
+}
+
+group = 'com.balionis.dainius.sps'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	sourceCompatibility = JavaVersion.VERSION_17
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+	implementation 'org.liquibase:liquibase-core:4.22.0'
+	implementation 'mysql:mysql-connector-java:8.0.28'
+
+	testImplementation 'com.h2database:h2'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+	testImplementation 'io.rest-assured:rest-assured:4.4.0'
+	testImplementation 'org.springframework:spring-test'
+	testImplementation 'org.mock-server:mockserver-netty:5.11.2'
+	testImplementation 'org.mock-server:mockserver-client-java:5.11.2'
+}
+
+
+
+tasks.named('test') {
+	useJUnitPlatform()
+}
+
+
+tasks.register('liquibaseUpdate', JavaExec) {
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'liquibase.integration.commandline.Main'
+	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+			'--url=jdbc:mysql://localhost:3306/dainius_db',
+			'--username=root',
+			'--password=1234',
+			'--driver=com.mysql.cj.jdbc.Driver',
+			'update'
+}
+
+
+tasks.register('liquibaseStatus', JavaExec) {
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'liquibase.integration.commandline.Main'
+
+	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+			'--url=jdbc:mysql://localhost:3306/dainius_db',
+			'--username=root',
+			'--password=1234',
+			'--driver=com.mysql.cj.jdbc.Driver',
+			'status'
+}
+
+tasks.register('liquibaseClearCheckSums', JavaExec) {
+	classpath = sourceSets.main.runtimeClasspath
+	mainClass = 'liquibase.integration.commandline.Main'
+	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+			'--url=jdbc:mysql://localhost:3306/dainius_db',
+			'--username=root',
+			'--password=1234',
+			'--driver=com.mysql.cj.jdbc.Driver',
+			'clearCheckSums'
+}
+
+
+
+

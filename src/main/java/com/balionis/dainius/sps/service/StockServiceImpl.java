@@ -91,8 +91,6 @@ public class StockServiceImpl implements StockService {
         }
     }
 
-
-
     @Override
     public List<Stock> findStocksByTicker(String ticker) {
         return stockRepository.findByTickerContaining(ticker);
