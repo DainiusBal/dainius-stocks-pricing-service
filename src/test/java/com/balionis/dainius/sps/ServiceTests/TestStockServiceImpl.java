@@ -16,15 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
-
+import java.util.UUID;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Arrays;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -220,6 +217,8 @@ public class TestStockServiceImpl {
     }
 
 
+
+
     @Test
     void testGetPriceHistoryWhenStockFoundWithNoPrices() {
         // Create and persist a stock with no associated prices
@@ -232,8 +231,9 @@ public class TestStockServiceImpl {
         assertTrue(result.isEmpty());
 
         verify(stockRepository, times(1)).findByTicker("AAPL");
-        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(UUID.class), any(LocalDate.class), any(LocalDate.class));
     }
+
 
 
     @Test
@@ -264,7 +264,7 @@ public class TestStockServiceImpl {
         List<Price> result = stockService.getPriceHistory(ticker, fromDate, toDate);
 
         assertEquals(Collections.emptyList(), result);
-        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(anyLong(), any(LocalDate.class), any(LocalDate.class));
+        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(UUID.class), any(LocalDate.class), any(LocalDate.class));
     }
 
 

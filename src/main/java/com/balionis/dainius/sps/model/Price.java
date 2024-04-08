@@ -3,15 +3,17 @@ package com.balionis.dainius.sps.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import javax.persistence.*;
 
 @Entity
 @Table(name = "prices")
 public class Price {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "price_id")
-    private Long priceId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "price_id", columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "stock_id")
@@ -53,8 +55,8 @@ public class Price {
 
 
 
-    public Long getPriceId() {
-        return priceId;
+    public UUID getPriceId() {
+        return id;
     }
 
     public Stock getStock() {
@@ -78,8 +80,8 @@ public class Price {
     }
 
 
-    public void setPriceId(Long priceId) {
-        this.priceId = priceId;
+    public void setPriceId(UUID id) {
+        this.id = id;
     }
 
     public void setStock(Stock stock) {

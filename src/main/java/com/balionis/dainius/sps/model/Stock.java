@@ -4,14 +4,17 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Entity
 @Table(name = "stocks")
 public class Stock {
+
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "stock_id")
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "stock_id", columnDefinition = "BINARY(16)")
+    private UUID id;
 
     @Column(name = "ticker")
     private String ticker;
@@ -63,7 +66,7 @@ public class Stock {
     }
 
 
-    public Long getStockId() {
+    public UUID getStockId() {
         return id;
     }
 
@@ -87,7 +90,7 @@ public class Stock {
         return updatedAt;
     }
 
-    public void setStockId(Long id) {
+    public void setStockId(UUID id) {
         this.id = id;
     }
 

@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -63,9 +64,8 @@ public class TestStock {
 
     @Test
     void testSetStockId() {
-
         Stock stock = new Stock();
-        Long id = 1234L;
+        UUID id = UUID.randomUUID(); // Generate a random UUID
 
         stock.setStockId(id);
         assertEquals(id, stock.getStockId());

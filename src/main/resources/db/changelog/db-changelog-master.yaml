@@ -1,6 +1,18 @@
 databaseChangeLog:
   - changeSet:
-      id: 1
+      id: 6
+      author: liquibase
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS stocks;
+  - changeSet:
+      id: 7
+      author: liquibase
+      changes:
+        - sql:
+            sql: DROP TABLE IF EXISTS prices;
+  - changeSet:
+      id: 8
       author: liquibase
       changes:
         - createTable:
@@ -8,10 +20,10 @@ databaseChangeLog:
             columns:
               - column:
                   name: stock_id
-                  type: int
-                  autoIncrement: true
+                  type: uuid
                   constraints:
                     primaryKey: true
+                    defaultValueComputed: uuid_generate_v4()
               - column:
                   name: ticker
                   type: varchar(10)
@@ -39,12 +51,8 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     defaultValueComputed: CURRENT_TIMESTAMP
-      rollback:
-        - dropTable:
-            tableName: stocks
-
   - changeSet:
-      id: 2
+      id: 9
       author: liquibase
       changes:
         - createTable:
@@ -52,13 +60,13 @@ databaseChangeLog:
             columns:
               - column:
                   name: price_id
-                  type: int
-                  autoIncrement: true
+                  type: uuid
                   constraints:
                     primaryKey: true
+                    defaultValueComputed: uuid_generate_v4()
               - column:
                   name: stock_id
-                  type: int
+                  type: uuid
                   constraints:
                     nullable: false
               - column:
@@ -91,7 +99,3 @@ databaseChangeLog:
                   referencedTableName: stocks
                   referencedColumnNames: stock_id
                   constraintName: fk_prices_stocks
-      rollback:
-        - dropTable:
-            tableName: prices
-

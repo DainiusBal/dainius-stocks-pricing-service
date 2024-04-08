@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -81,14 +82,14 @@ public class TestPrice {
     }
 
     @Test
-    void testGetPriceId(){
+    void testGetPriceId() {
         Price price = new Price();
-        Long id = 1478L;
+        UUID id = UUID.randomUUID();
 
         price.setPriceId(id);
         assertEquals(id, price.getPriceId());
-
     }
+
 
 
 }

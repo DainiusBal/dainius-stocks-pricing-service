@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -23,22 +24,26 @@ public class TestStockRepository {
 
     @Test
     void testFindByTicker() {
-
         Stock stock = new Stock();
         stock.setTicker("AAPL");
         stock.setDescription("Apple Inc.");
         stock.setSharesOutstanding(1000000);
 
+        // Generate a random UUID
+        UUID stockUuid = UUID.randomUUID();
+        stock.setStockId(stockUuid);
 
-        when(mockStockRepository.findById(stock.getStockId())).thenReturn(Optional.of(stock));
+        // Mock the findById method to return the Stock object
+        when(mockStockRepository.findById(stockUuid)).thenReturn(Optional.of(stock));
 
+        // Call the method being tested
+        Optional<Stock> result = stockRepository.findById(stockUuid);
 
-        Optional<Stock> result = stockRepository.findById(stock.getStockId());
-
-
+        // Assert the result
         assertEquals(Optional.of(stock), result);
     }
 }
+
 
 
 
