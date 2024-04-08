@@ -9,7 +9,7 @@ spring:
     change-log: classpath:/db/changelog/db-changelog-master.yaml
     parameters:
       driver: com.mysql.cj.jdbc.Driver  # Make sure it matches the driver class name above
-    enabled: false
+    enabled: true
 
 
 logging:
