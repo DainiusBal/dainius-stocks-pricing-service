@@ -231,7 +231,7 @@ public class TestStockServiceImpl {
         assertTrue(result.isEmpty());
 
         verify(stockRepository, times(1)).findByTicker("AAPL");
-        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(UUID.class), any(LocalDate.class), any(LocalDate.class));
+        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(String.class), any(LocalDate.class), any(LocalDate.class));
     }
 
 
@@ -264,7 +264,7 @@ public class TestStockServiceImpl {
         List<Price> result = stockService.getPriceHistory(ticker, fromDate, toDate);
 
         assertEquals(Collections.emptyList(), result);
-        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(UUID.class), any(LocalDate.class), any(LocalDate.class));
+        verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(String.class), any(LocalDate.class), any(LocalDate.class));
     }
 
 

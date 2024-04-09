@@ -1,5 +1,7 @@
 package com.balionis.dainius.sps.model;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -12,9 +14,10 @@ public class Stock {
 
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "stock_id", columnDefinition = "BINARY(16)")
-    private UUID id;
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "stock_id", columnDefinition = "CHAR(36)")
+    private String id;
 
     @Column(name = "ticker")
     private String ticker;
@@ -66,7 +69,7 @@ public class Stock {
     }
 
 
-    public UUID getStockId() {
+    public String getStockId() {
         return id;
     }
 
@@ -90,7 +93,7 @@ public class Stock {
         return updatedAt;
     }
 
-    public void setStockId(UUID id) {
+    public void setStockId(String id) {
         this.id = id;
     }
 

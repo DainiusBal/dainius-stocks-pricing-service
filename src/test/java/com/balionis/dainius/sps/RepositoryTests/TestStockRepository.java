@@ -2,47 +2,44 @@ package com.balionis.dainius.sps.RepositoryTests;
 
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.repository.StockRepository;
+import com.balionis.dainius.sps.service.StockService;
+import com.balionis.dainius.sps.service.StockServiceImpl;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-
-import java.util.Optional;
-import java.util.UUID;
-
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.springframework.boot.test.context.SpringBootTest;
+import java.util.Collections;
+import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@DataJpaTest
+@SpringBootTest
 public class TestStockRepository {
 
-    @Autowired
-    private StockRepository stockRepository;
-
-    @MockBean
+    @Mock
     private StockRepository mockStockRepository;
 
+    @InjectMocks
+    private StockServiceImpl stockService;
+
     @Test
-    void testFindByTicker() {
+    void testFindStocksByTicker() {
+        // Define test data
+        String ticker = "AAPL";
         Stock stock = new Stock();
         stock.setTicker("AAPL");
-        stock.setDescription("Apple Inc.");
-        stock.setSharesOutstanding(1000000);
 
-        // Generate a random UUID
-        UUID stockUuid = UUID.randomUUID();
-        stock.setStockId(stockUuid);
-
-        // Mock the findById method to return the Stock object
-        when(mockStockRepository.findById(stockUuid)).thenReturn(Optional.of(stock));
+        // Mock the behavior of the repository's findByTickerContaining method
+        when(mockStockRepository.findByTickerContaining(ticker)).thenReturn(Collections.singletonList(stock));
 
         // Call the method being tested
-        Optional<Stock> result = stockRepository.findById(stockUuid);
+        List<Stock> result = stockService.findStocksByTicker(ticker);
 
         // Assert the result
-        assertEquals(Optional.of(stock), result);
+        assertEquals(Collections.singletonList(stock), result);
     }
 }
+
 
 
 

@@ -17,10 +17,11 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: stocks
+            encoding: UTF-8
             columns:
               - column:
                   name: stock_id
-                  type: uuid
+                  type: CHAR(36)
                   constraints:
                     primaryKey: true
                     defaultValueComputed: uuid_generate_v4()
@@ -57,16 +58,17 @@ databaseChangeLog:
       changes:
         - createTable:
             tableName: prices
+            encoding: UTF-8
             columns:
               - column:
                   name: price_id
-                  type: uuid
+                  type: CHAR(36)
                   constraints:
                     primaryKey: true
                     defaultValueComputed: uuid_generate_v4()
               - column:
                   name: stock_id
-                  type: uuid
+                  type: CHAR(36)
                   constraints:
                     nullable: false
               - column:

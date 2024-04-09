@@ -84,10 +84,10 @@ public class TestPrice {
     @Test
     void testGetPriceId() {
         Price price = new Price();
-        UUID id = UUID.randomUUID();
+        String priceId = UUID.randomUUID().toString();
 
-        price.setPriceId(id);
-        assertEquals(id, price.getPriceId());
+        price.setPriceId(priceId);
+        assertEquals(priceId, price.getPriceId());
     }
 
 

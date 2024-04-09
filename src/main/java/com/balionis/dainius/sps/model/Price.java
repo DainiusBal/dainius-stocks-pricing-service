@@ -1,5 +1,7 @@
 package com.balionis.dainius.sps.model;
 
+import org.hibernate.annotations.GenericGenerator;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -10,12 +12,15 @@ import javax.persistence.*;
 @Table(name = "prices")
 public class Price {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "price_id", columnDefinition = "BINARY(16)")
-    private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+
+    @Id
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @Column(name = "price_id", columnDefinition = "CHAR(36)")
+    private String priceId;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "stock_id")
     private Stock stock;
 
@@ -54,9 +59,8 @@ public class Price {
 
 
 
-
-    public UUID getPriceId() {
-        return id;
+    public String getPriceId() {
+        return priceId;
     }
 
     public Stock getStock() {
@@ -80,9 +84,7 @@ public class Price {
     }
 
 
-    public void setPriceId(UUID id) {
-        this.id = id;
-    }
+    public void setPriceId(String priceId) { this.priceId = priceId; }
 
     public void setStock(Stock stock) {
         this.stock = stock;

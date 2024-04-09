@@ -33,6 +33,7 @@ public class StockController {
                     .body("A stock with ticker '" + stock.getTicker() + "' already exists.");
         }
 
+        // Assuming the ID is generated as a UUID in the service layer
         Stock createdStock = stockService.addOrUpdateStock(stock);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
     }
@@ -82,7 +83,7 @@ public class StockController {
         List<Price> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }
-
 }
+
 
 

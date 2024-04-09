@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 
@@ -84,7 +85,7 @@ public class StockServiceImpl implements StockService {
         Stock stock = stockRepository.findByTicker(ticker);
 
         if (stock != null) {
-            UUID stockId = stock.getStockId();
+            String stockId = stock.getStockId();
             List<Price> prices = priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
             return prices;
         } else {
@@ -96,6 +97,7 @@ public class StockServiceImpl implements StockService {
     public List<Stock> findStocksByTicker(String ticker) {
         return stockRepository.findByTickerContaining(ticker);
     }
+
 }
 
 

@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Repository
 public interface PriceRepository extends JpaRepository<Price, Long> {
-    List<Price> findByStockIdAndPricingDateBetween(UUID stockId, LocalDate fromDate, LocalDate toDate);
+    List<Price> findByStockIdAndPricingDateBetween(String stockId, LocalDate fromDate, LocalDate toDate);
 }
 
 

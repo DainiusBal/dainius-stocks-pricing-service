@@ -65,10 +65,11 @@ public class TestStock {
     @Test
     void testSetStockId() {
         Stock stock = new Stock();
-        UUID id = UUID.randomUUID(); // Generate a random UUID
+        String id = UUID.randomUUID().toString();
 
         stock.setStockId(id);
-        assertEquals(id, stock.getStockId());
+        String retrievedId = stock.getStockId();
+        assertEquals(id, retrievedId);
     }
 
 
