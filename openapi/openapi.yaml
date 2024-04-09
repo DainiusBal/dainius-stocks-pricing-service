@@ -1,0 +1,227 @@
+openapi: 3.0.0
+info:
+  title: Stock API
+  version: 1.0.0
+  description: API for managing stocks
+
+paths:
+  /api/v1/stocks:
+    get:
+      summary: Retrieve all stocks
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockList'
+          x-examples:
+            successfulResponse:
+              summary: Example of a successful response
+              value:
+                - ticker: "AAPL"
+                  description: "Apple Inc."
+                  sharesOutstanding: 100000000
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          x-examples:
+            errorResponse:
+              summary: Example of an error response
+              value:
+                code: "500"
+                message: "Internal Server Error"
+    post:
+      summary: Add a new stock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Stock'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Stock'
+          x-examples:
+            successfulResponse:
+              summary: Example of a successful response
+              value:
+                ticker: "GOOGL"
+                description: "Alphabet Inc."
+                sharesOutstanding: 200000000
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          x-examples:
+            errorResponse:
+              summary: Example of an error response
+              value:
+                code: "400"
+                message: "Bad Request"
+
+  '/api/v1/stocks/{ticker}':
+    parameters:
+      - in: path
+        name: ticker
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Retrieve stocks matching the ticker
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StockList'
+          x-examples:
+            successfulResponse:
+              summary: Example of a successful response
+              value:
+                - ticker: "MSFT"
+                  description: "Microsoft Corporation"
+                  sharesOutstanding: 150000000
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          x-examples:
+            errorResponse:
+              summary: Example of an error response
+              value:
+                code: "404"
+                message: "Not Found"
+
+  '/api/v1/stocks/{ticker}/prices':
+    parameters:
+      - in: path
+        name: ticker
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Add a new price for a stock
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Price'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Price'
+          x-examples:
+            successfulResponse:
+              summary: Example of a successful response
+              value:
+                price: 25.99
+                date: "2024-04-09"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          x-examples:
+            errorResponse:
+              summary: Example of an error response
+              value:
+                code: "403"
+                message: "Forbidden"
+
+    get:
+      summary: Get prices for a stock within a date range
+      parameters:
+        - in: query
+          name: fromDate
+          required: true
+          schema:
+            type: string
+            format: date
+        - in: query
+          name: toDate
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceList'
+          x-examples:
+            successfulResponse:
+              summary: Example of a successful response
+              value:
+                - price: 25.99
+                  date: "2024-04-09"
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          x-examples:
+            errorResponse:
+              summary: Example of an error response
+              value:
+                code: "500"
+                message: "Internal Server Error"
+
+components:
+  schemas:
+    Stock:
+      type: object
+      properties:
+        ticker:
+          type: string
+        description:
+          type: string
+        sharesOutstanding:
+          type: integer
+
+    StockList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Stock'
+
+    Price:
+      type: object
+      properties:
+        price:
+          type: number
+        date:
+          type: string
+          format: date
+
+    PriceList:
+      type: array
+      items:
+        $ref: '#/components/schemas/Price'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string

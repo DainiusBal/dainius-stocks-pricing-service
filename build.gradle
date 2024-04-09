@@ -3,6 +3,7 @@ plugins {
 	id 'jacoco'
 	id 'org.springframework.boot' version '2.7.0'
 	id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+	id 'org.openapi.generator' version '7.2.0'
 }
 
 group = 'com.balionis.dainius.sps'
@@ -75,6 +76,15 @@ tasks.register('liquibaseRollbackOne', JavaExec) {
 			'rollbackCount',
 			'1'
 }
+
+
+openApiGenerate {
+	inputSpec.set(file('openapi/openapi.yaml').absolutePath)
+	outputDir.set(file('generatedAPI').absolutePath)
+	generatorName = 'openapi'
+	validateSpec = false
+}
+
 
 
 
