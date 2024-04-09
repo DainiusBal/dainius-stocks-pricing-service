@@ -1,14 +1,18 @@
 spring:
+  profiles: test
+
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create-drop
+    initialization-mode: always
 
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    parameters:
+      driver: org.h2.Driver
 
 logging:
   level:

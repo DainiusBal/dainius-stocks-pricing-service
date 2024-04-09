@@ -5,15 +5,20 @@ import com.balionis.dainius.sps.repository.StockRepository;
 import com.balionis.dainius.sps.service.StockService;
 import com.balionis.dainius.sps.service.StockServiceImpl;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+
 import java.util.Collections;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 public class TestStockRepository {
 
     @Mock
@@ -39,6 +44,7 @@ public class TestStockRepository {
         assertEquals(Collections.singletonList(stock), result);
     }
 }
+
 
 
 
