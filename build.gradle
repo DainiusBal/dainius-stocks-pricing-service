@@ -44,7 +44,7 @@ tasks.named('test') {
 tasks.register('liquibaseUpdate', JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'liquibase.integration.commandline.Main'
-	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+	args '--changeLogFile=src/main/resources/db/changelog/db.changelog-master.yaml',
 			'--url=jdbc:mysql://localhost:3306/dainius_db',
 			'--username=root',
 			'--password=1234',
@@ -57,7 +57,7 @@ tasks.register('liquibaseStatus', JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'liquibase.integration.commandline.Main'
 
-	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+	args '--changeLogFile=src/main/resources/db/changelog/db.changelog-master.yaml',
 			'--url=jdbc:mysql://localhost:3306/dainius_db',
 			'--username=root',
 			'--password=1234',
@@ -68,7 +68,7 @@ tasks.register('liquibaseStatus', JavaExec) {
 tasks.register('liquibaseRollbackOne', JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	mainClass = 'liquibase.integration.commandline.Main'
-	args '--changeLogFile=src/main/resources/db/changelog/db-changelog-master.yaml',
+	args '--changeLogFile=src/main/resources/db/changelog/db.changelog-master.yaml',
 			'--url=jdbc:mysql://localhost:3306/dainius_db',
 			'--username=root',
 			'--password=1234',
@@ -84,6 +84,38 @@ openApiGenerate {
 	generatorName = 'openapi'
 	validateSpec = false
 }
+
+
+tasks.register('dockerBuild', Exec) {
+	dependsOn('bootJar')
+
+	description = "Build a service docker image"
+	group = "Docker"
+	commandLine 'docker', 'build', '-t', "${project.name}:latest", "."
+}
+
+tasks.register("dockerComposeUp") {
+	description = "Start a service on local docker"
+	group = "Docker"
+	doLast {
+		exec {
+			commandLine "docker-compose", "-f", "docker-compose.yaml", "up", "-d"
+		}
+	}
+}
+
+
+tasks.register('dockerComposeDown', Exec) {
+	description = "Stop a service on local docker"
+	group = "Docker"
+	doLast {
+		exec {
+			workingDir = file(projectDir)
+			commandLine 'docker-compose', '-f', 'docker-compose.yaml', 'down'
+		}
+	}
+}
+
 
 
 
