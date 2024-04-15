@@ -2,46 +2,54 @@ package com.balionis.dainius.sps.RepositoryTests;
 
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.repository.StockRepository;
-import com.balionis.dainius.sps.service.StockService;
-import com.balionis.dainius.sps.service.StockServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
-@ExtendWith(MockitoExtension.class)
 @ActiveProfiles("test")
+@EnableAutoConfiguration
+@ExtendWith(SpringExtension.class)
+@EntityScan(basePackageClasses = Stock.class)
+@EnableJpaRepositories(basePackageClasses = {StockRepository.class})
 public class TestStockRepository {
 
-    @Mock
-    private StockRepository mockStockRepository;
-
-    @InjectMocks
-    private StockServiceImpl stockService;
+    @Autowired
+    private StockRepository stockRepository;
 
     @Test
     void testFindStocksByTicker() {
         // Define test data
         String ticker = "AAPL";
         Stock stock = new Stock();
-        stock.setTicker("AAPL");
-
-        // Mock the behavior of the repository's findByTickerContaining method
-        when(mockStockRepository.findByTickerContaining(ticker)).thenReturn(Collections.singletonList(stock));
+        stock.setTicker(ticker);
+        stock.setDescription("AAPL");
+        stock.setSharesOutstanding(100);
 
         // Call the method being tested
-        List<Stock> result = stockService.findStocksByTicker(ticker);
+        stockRepository.save(stock);
+        List<Stock> result = stockRepository.findByTickerContaining(ticker);
 
         // Assert the result
-        assertEquals(Collections.singletonList(stock), result);
+        assertThat(result.size()).isEqualTo(1);
+
+        Stock resultStock = result.get(0);
+        assertThat(resultStock.getTicker()).isEqualTo(ticker);
+        assertThat(resultStock.getDescription()).isEqualTo(stock.getDescription());
+        assertThat(resultStock.getSharesOutstanding()).isEqualTo(stock.getSharesOutstanding());
+        assertThat(resultStock.getStockId()).isNotEmpty();
+        assertThat(resultStock.getCreatedAt()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
+        assertThat(resultStock.getUpdatedAt()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
     }
 }
 
