@@ -28,17 +28,17 @@ services:
       - my_network
 
   liquibase:
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: liquibase/liquibase:4.21.1
+    environment:
+      INSTALL_MYSQL: true
     volumes:
       - ./src/main/resources/db/changelog:/liquibase/changelog
-    command: update --url=jdbc:mysql://local-mysql:3306/dainius_db?user=root&password=1234 --changeLogFile=/liquibase/changelog/db.changelog-master.yaml
+    command: update --url=jdbc:mysql://mysql:3306/dainius_db?user=root'&'password=1234 --changelog-file=changelog/db.changelog-master.yaml
     depends_on:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD-SHELL", "liquibase --url=jdbc:mysql://local-mysql:3306/dainius_db?user=root&password=1234 --changeLogFile=/liquibase/changelog/db.changelog-master.yaml --logLevel=debug --diff" ]
+      test: [ "CMD-SHELL", "liquibase --url=jdbc:mysql://mysql:3306/dainius_db?user=root'&'password=1234 --changelog-file=changelog/db.changelog-master.yaml --logLevel=debug --diff" ]
       interval: 10s
       timeout: 60s
       retries: 5
@@ -47,7 +47,7 @@ services:
       - my_network
 
 
-  dainius-sp-service:
+  dainius-service:
     image: dainius-stocks-pricing-service:latest
     ports:
       - "8080:9090"
