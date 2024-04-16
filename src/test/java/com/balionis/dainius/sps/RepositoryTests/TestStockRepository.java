@@ -1,5 +1,8 @@
 package com.balionis.dainius.sps.RepositoryTests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.repository.StockRepository;
 import org.junit.jupiter.api.Test;
@@ -11,11 +14,11 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.within;
+import java.util.UUID;
 
 @ActiveProfiles("test")
 @EnableAutoConfiguration
@@ -32,9 +35,13 @@ public class TestStockRepository {
         // Define test data
         String ticker = "AAPL";
         Stock stock = new Stock();
+        stock.setStockId(UUID.randomUUID().toString()); // unfortunately, this value will be overwritten by GeneratedValue. Consider setting it explicitly rather than using the GeneratedValue.
         stock.setTicker(ticker);
         stock.setDescription("AAPL");
         stock.setSharesOutstanding(100);
+        LocalDateTime now = LocalDateTime.now(Clock.systemUTC());
+        stock.setCreatedAt(now);
+        stock.setUpdatedAt(now);
 
         // Call the method being tested
         stockRepository.save(stock);
@@ -42,12 +49,10 @@ public class TestStockRepository {
 
         // Assert the result
         assertThat(result.size()).isEqualTo(1);
-
+        assertThat(result).usingRecursiveFieldByFieldElementComparatorIgnoringFields("stockId", "prices", "createdAt", "updatedAt")
+                .contains(stock);
         Stock resultStock = result.get(0);
-        assertThat(resultStock.getTicker()).isEqualTo(ticker);
-        assertThat(resultStock.getDescription()).isEqualTo(stock.getDescription());
-        assertThat(resultStock.getSharesOutstanding()).isEqualTo(stock.getSharesOutstanding());
-        assertThat(resultStock.getStockId()).isNotEmpty();
+        assertThat(resultStock.getStockId()).isNotEqualTo(stock.getStockId());
         assertThat(resultStock.getCreatedAt()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
         assertThat(resultStock.getUpdatedAt()).isCloseTo(LocalDateTime.now(), within(10, ChronoUnit.SECONDS));
     }

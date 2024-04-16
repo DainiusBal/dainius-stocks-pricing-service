@@ -9,10 +9,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, Long> {
+public interface StockRepository extends JpaRepository<Stock, String> {
     List<Stock> findByTickerContaining(String ticker);
     Stock findByTicker(String ticker);
 
-    Optional<Stock> findById(UUID id);
+    Optional<Stock> findById(String stockId);
 }
 
