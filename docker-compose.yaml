@@ -32,7 +32,7 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./dainius-sp-service/src/main/resources/db/changelog:/liquibase/changelog
+      - ./src/main/resources/db/changelog:/liquibase/changelog
     command: update --url=jdbc:mysql://local-mysql:3306/dainius_db?user=root&password=1234 --changeLogFile=/liquibase/changelog/db.changelog-master.yaml
     depends_on:
       mysql:
@@ -48,7 +48,7 @@ services:
 
 
   dainius-sp-service:
-    image: dainius-sp-service:latest
+    image: dainius-stock-pricing-service:latest
     ports:
       - "8080:9090"
     depends_on:
