@@ -2,51 +2,46 @@ package com.balionis.dainius.sps.RepositoryTests;
 
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.repository.StockRepository;
-import com.balionis.dainius.sps.service.StockService;
-import com.balionis.dainius.sps.service.StockServiceImpl;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.util.Collections;
+import java.time.LocalDateTime;
 import java.util.List;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+@DataJpaTest
 @ActiveProfiles("test")
 public class TestStockRepository {
 
-    @Mock
-    private StockRepository mockStockRepository;
-
-    @InjectMocks
-    private StockServiceImpl stockService;
+    @Autowired
+    private StockRepository stockRepository;
 
     @Test
     void testFindStocksByTicker() {
-        // Define test data
+
         String ticker = "AAPL";
+        LocalDateTime specificTime = LocalDateTime.of(2024, 4, 16, 10, 0, 0);
+
+        System.out.println("Specified time: " + specificTime);
+
         Stock stock = new Stock();
-        stock.setTicker("AAPL");
+        stock.setTicker(ticker);
+        stock.setCreatedAt(specificTime);
+        stock.setUpdatedAt(specificTime);
+        stockRepository.save(stock);
 
-        // Mock the behavior of the repository's findByTickerContaining method
-        when(mockStockRepository.findByTickerContaining(ticker)).thenReturn(Collections.singletonList(stock));
+        List<Stock> result = stockRepository.findByTickerContaining(ticker);
 
-        // Call the method being tested
-        List<Stock> result = stockService.findStocksByTicker(ticker);
+        assertEquals(1, result.size());
+        assertEquals("AAPL", result.get(0).getTicker());
 
-        // Assert the result
-        assertEquals(Collections.singletonList(stock), result);
+        LocalDateTime actualCreatedAt = result.get(0).getCreatedAt();
+        LocalDateTime actualUpdatedAt = result.get(0).getUpdatedAt();
+
+        assertEquals(specificTime, actualCreatedAt);
+        assertEquals(specificTime, actualUpdatedAt);
     }
 }
-
-
-
-
-
-
