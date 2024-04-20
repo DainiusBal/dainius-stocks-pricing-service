@@ -121,5 +121,11 @@ public class Stock {
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String toString() {
+        return "{ id=" + id + ", ticker=" + ticker + ", description=" + description
+                + ", sharesOutstanding=" + sharesOutstanding
+                + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "}";
+    }
 }
 

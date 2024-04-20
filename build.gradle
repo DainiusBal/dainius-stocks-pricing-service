@@ -34,10 +34,19 @@ dependencies {
 	testImplementation 'org.mock-server:mockserver-client-java:5.11.2'
 }
 
-
-
 tasks.named('test') {
 	useJUnitPlatform()
+	finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+	reports {
+		xml.required = false
+		csv.required = false
+		html.outputLocation = layout.buildDirectory.dir("jacoco-html")
+	}
+
+	dependsOn(tasks.test)
 }
 
 

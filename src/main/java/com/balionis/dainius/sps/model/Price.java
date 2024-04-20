@@ -12,8 +12,6 @@ import javax.persistence.*;
 @Table(name = "prices")
 public class Price {
 
-
-
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -48,16 +46,19 @@ public class Price {
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
+        if (createdAt == null) {
+            this.createdAt = now;
+        }
+        if (updatedAt == null) {
+            this.updatedAt = now;
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
-
-
 
     public String getPriceId() {
         return priceId;
@@ -106,5 +107,10 @@ public class Price {
         this.updatedAt = updatedAt;
     }
 
+    public String toString() {
+        return "{ priceId=" + priceId + ", pricingDate=" + pricingDate + ", priceValue=" + priceValue
+                + ", stockId=" + (stock != null ? stock.getStockId() : "null")
+                + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "}";
+    }
 
 }

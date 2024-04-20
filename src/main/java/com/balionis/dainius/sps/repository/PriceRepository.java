@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Repository
-public interface PriceRepository extends JpaRepository<Price, Long> {
+public interface PriceRepository extends JpaRepository<Price, String> {
     @Query("select p from Price p where p.stock.stockId = ?1 AND p.pricingDate >= ?2 AND p.pricingDate <= ?3")
     List<Price> findByStockIdAndPricingDateBetween(String stockId, LocalDate fromDate, LocalDate toDate);
 }
