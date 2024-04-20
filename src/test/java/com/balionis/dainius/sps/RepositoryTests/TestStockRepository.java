@@ -29,6 +29,8 @@ public class TestStockRepository {
 
         Stock stock = new Stock();
         stock.setTicker(ticker);
+        stock.setDescription("Apple");
+        stock.setSharesOutstanding(100);
         stock.setCreatedAt(specificTime);
         stock.setUpdatedAt(specificTime);
         stockRepository.save(stock);
@@ -37,6 +39,8 @@ public class TestStockRepository {
 
         assertEquals(1, result.size());
         assertEquals("AAPL", result.get(0).getTicker());
+        assertEquals("Apple", result.get(0).getDescription());
+        assertEquals(100, result.get(0).getSharesOutstanding());
 
         LocalDateTime actualCreatedAt = result.get(0).getCreatedAt();
         LocalDateTime actualUpdatedAt = result.get(0).getUpdatedAt();
