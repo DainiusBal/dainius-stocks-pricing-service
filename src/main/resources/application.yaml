@@ -5,11 +5,8 @@ spring:
     password: 1234
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-liquibase:
-  change-log: classpath:/db/changelog/db.changelog-master.yaml
-  parameters:
-    driver: com.mysql.cj.jdbc.Driver
-  enabled: true
+  liquibase:
+    enabled: false
 
 logging:
   level:
