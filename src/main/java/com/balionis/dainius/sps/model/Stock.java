@@ -123,7 +123,7 @@ public class Stock {
     }
 
     public String toString() {
-        return "{ id=" + id + ", ticker=" + ticker + ", description=" + description
+        return "{ stockId=" + stockId + ", ticker=" + ticker + ", description=" + description
                 + ", sharesOutstanding=" + sharesOutstanding
                 + ", createdAt=" + createdAt + ", updatedAt=" + updatedAt + "}";
     }
