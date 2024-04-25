@@ -17,7 +17,7 @@ public class Stock {
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "stock_id", columnDefinition = "CHAR(36)")
-    private String id;
+    private String stockId;
 
     @Column(name = "ticker")
     private String ticker;
@@ -75,7 +75,7 @@ public class Stock {
 
 
     public String getStockId() {
-        return id;
+        return stockId;
     }
 
     public String getTicker() {
@@ -98,8 +98,8 @@ public class Stock {
         return updatedAt;
     }
 
-    public void setStockId(String id) {
-        this.id = id;
+    public void setStockId(String stockId) {
+        this.stockId = stockId;
     }
 
     public void setTicker(String ticker) {
