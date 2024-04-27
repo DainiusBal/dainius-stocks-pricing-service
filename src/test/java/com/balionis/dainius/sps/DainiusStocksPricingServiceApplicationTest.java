@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 @ActiveProfiles("test")
 @SpringBootTest
-class DainiusStocksPricingServiceApplicationTests {
+class DainiusStocksPricingServiceApplicationTest {
 
 	@Autowired
 	private ApplicationContext applicationContext;

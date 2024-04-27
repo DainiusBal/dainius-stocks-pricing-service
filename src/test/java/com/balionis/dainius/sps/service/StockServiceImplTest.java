@@ -1,4 +1,4 @@
-package com.balionis.dainius.sps.ServiceTests;
+package com.balionis.dainius.sps.service;
 
 
 import com.balionis.dainius.sps.controller.StockController;
@@ -28,7 +28,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
 
-public class TestStockServiceImpl {
+public class StockServiceImplTest {
 
     @Mock
     private StockRepository stockRepository;

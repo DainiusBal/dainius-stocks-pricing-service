@@ -1,4 +1,4 @@
-package com.balionis.dainius.sps.StockControllerTests;
+package com.balionis.dainius.sps.controller;
 
 import com.balionis.dainius.sps.controller.StockController;
 import com.balionis.dainius.sps.model.Price;

@@ -1,4 +1,4 @@
-package com.balionis.dainius.sps.RepositoryTests;
+package com.balionis.dainius.sps.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
@@ -19,7 +19,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @DataJpaTest
-public class TestPriceRepository {
+public class PriceRepositoryTest {
 
     @Autowired
     private StockRepository stockRepository;
