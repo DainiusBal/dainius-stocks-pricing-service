@@ -1,4 +1,4 @@
-package com.balionis.dainius.sps.RepositoryTests;
+package com.balionis.dainius.sps.repository;
 
 import com.balionis.dainius.sps.model.Stock;
 import com.balionis.dainius.sps.repository.StockRepository;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DataJpaTest
 @ActiveProfiles("test")
-public class TestStockRepository {
+public class StockRepositoryTest {
 
     @Autowired
     private StockRepository stockRepository;

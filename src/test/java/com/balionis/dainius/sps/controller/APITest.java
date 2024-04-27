@@ -1,4 +1,4 @@
-package com.balionis.dainius.sps.ApiEndpointTests;
+package com.balionis.dainius.sps.controller;
 
 
 import org.junit.jupiter.api.AfterAll;
