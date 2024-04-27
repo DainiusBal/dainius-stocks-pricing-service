@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "stocks")
-public class Stock {
+public class StockRecord {
 
 
     @Id
@@ -34,18 +34,17 @@ public class Stock {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Stock() {
+    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
+    private List<PriceRecord> prices = new ArrayList<>();
+
+    public StockRecord() {
     }
 
-    public Stock(String ticker, String description, int sharesOutstanding) {
+    public StockRecord(String ticker, String description, int sharesOutstanding) {
         this.ticker = ticker;
         this.description = description;
         this.sharesOutstanding = sharesOutstanding;
     }
-
-    @OneToMany(mappedBy = "stock", cascade = CascadeType.ALL)
-    private List<Price> prices = new ArrayList<>();
-
 
     @PrePersist
     protected void onCreate() {
@@ -63,12 +62,12 @@ public class Stock {
     }
 
 
-    public void addPrice(Price price) {
+    public void addPrice(PriceRecord price) {
         price.setStock(this);
         prices.add(price);
     }
 
-    public void removePrice(Price price) {
+    public void removePrice(PriceRecord price) {
         price.setStock(null);
         prices.remove(price);
     }

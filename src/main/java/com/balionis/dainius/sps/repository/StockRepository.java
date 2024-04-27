@@ -1,18 +1,17 @@
 package com.balionis.dainius.sps.repository;
 
-import com.balionis.dainius.sps.model.Stock;
+import com.balionis.dainius.sps.model.StockRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Repository
-public interface StockRepository extends JpaRepository<Stock, String> {
-    List<Stock> findByTickerContaining(String ticker);
-    Stock findByTicker(String ticker);
+public interface StockRepository extends JpaRepository<StockRecord, String> {
+    List<StockRecord> findByTickerContaining(String ticker);
 
-    Optional<Stock> findById(String id);
+    Optional<StockRecord> findByTicker(String ticker);
+
 }
 

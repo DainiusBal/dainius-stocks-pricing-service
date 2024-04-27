@@ -1,7 +1,6 @@
 package com.balionis.dainius.sps.repository;
 
-import com.balionis.dainius.sps.model.Stock;
-import com.balionis.dainius.sps.repository.StockRepository;
+import com.balionis.dainius.sps.model.StockRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -27,7 +26,7 @@ public class StockRepositoryTest {
 
         System.out.println("Specified time: " + specificTime);
 
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
         stock.setTicker(ticker);
         stock.setDescription("Apple");
         stock.setSharesOutstanding(100);
@@ -35,7 +34,7 @@ public class StockRepositoryTest {
         stock.setUpdatedAt(specificTime);
         stockRepository.save(stock);
 
-        List<Stock> result = stockRepository.findByTickerContaining(ticker);
+        List<StockRecord> result = stockRepository.findByTickerContaining(ticker);
 
         assertEquals(1, result.size());
         assertEquals("AAPL", result.get(0).getTicker());
