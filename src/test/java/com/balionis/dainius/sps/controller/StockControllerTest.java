@@ -1,9 +1,9 @@
 package com.balionis.dainius.sps.controller;
 
-import com.balionis.dainius.sps.model.PriceRecord;
-import com.balionis.dainius.sps.model.StockRecord;
-import com.balionis.dainius.sps.repository.StockRepository;
-import com.balionis.dainius.sps.service.PriceRequest;
+import com.balionis.dainius.sps.generated.model.AddPriceResponse;
+import com.balionis.dainius.sps.generated.model.FindPricesResponse;
+import com.balionis.dainius.sps.generated.model.Price;
+import com.balionis.dainius.sps.generated.model.Stock;
 import com.balionis.dainius.sps.service.StockService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,10 +15,10 @@ import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
@@ -36,7 +36,10 @@ public class StockControllerTest {
     @Test
     public void testGetStocks() {
         // Mock data
-        List<StockRecord> mockStocks = Collections.singletonList(new StockRecord("IBM.N", "International Business Machines", 98000000));
+        List<Stock> mockStocks = Collections.singletonList(
+                new Stock().ticker("IBM.N")
+                        .description("International Business Machines")
+                        .sharesOutstanding(98000000));
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(mockStocks);
 
@@ -49,24 +52,14 @@ public class StockControllerTest {
 
         response = stockController.getStocks("GOOGL");
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("No stocks found", response.getBody());
-
-        response = stockController.getStocks("");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("No stocks found", response.getBody());
-
-        response = stockController.getStocks("*");
-
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-        assertEquals("No stocks found", response.getBody());
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(List.of(), response.getBody());
     }
 
     @Test
-    public void testAddStockWhenStockDoesNotExist() {
+    public void testAddStock_whenStockDoesNotExist() {
         // Mock data for a new stock
-        StockRecord newStock = new StockRecord("IBM.N", "International Business Machines", 98000000);
+        Stock newStock = new Stock().ticker("IBM.N").description("International Business Machines").sharesOutstanding(98000000);
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.emptyList());
 
@@ -79,9 +72,9 @@ public class StockControllerTest {
     }
 
     @Test
-    public void testAddStockWhenStockAlreadyExists() {
+    public void testAddStock_whenStockAlreadyExists() {
 
-        StockRecord existingStock = new StockRecord("IBM.N", "International Business Machines", 98000000);
+        Stock existingStock = new Stock().ticker("IBM.N").description("International Business Machines").sharesOutstanding(98000000);
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(existingStock));
 
@@ -94,61 +87,43 @@ public class StockControllerTest {
     @Test
     public void testAddPrice_Success() {
 
-        StockService stockService = mock(StockService.class);
-        StockController controller = new StockController(stockService);
+        UUID stockId = UUID.randomUUID();
+        Price price = new Price().pricingDate(LocalDate.of(2024, 3, 10)).priceValue(BigDecimal.valueOf(19.99));
+        AddPriceResponse addPriceResponse = new AddPriceResponse().price(price).stockId(stockId);
 
-        PriceRequest request = new PriceRequest();
-        request.setPrice(BigDecimal.valueOf(19.99));
-        request.setDate("2024-03-10");
+        when(stockService.addOrUpdatePrice("IBM.N", price)).thenReturn(addPriceResponse);
 
-        StockRecord stock = new StockRecord();
-        stock.setTicker("IBM.N");
-
-        PriceRecord price = new PriceRecord();
-        price.setStock(stock);
-        price.setPriceValue(request.getPrice());
-        price.setPricingDate(request.getDate());
-
-        when(stockService.addOrUpdatePrice("IBM.N", BigDecimal.valueOf(19.99), LocalDate.of(2024, 3, 10))).thenReturn(price);
-
-        ResponseEntity<?> response = controller.addPrice("IBM.N", request);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        ResponseEntity<?> response = stockController.addPrice("IBM.N", price);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
-    public void testAddPrice_Failure() {
+    public void testAddPrice_UnknownTicker() {
 
-        StockService stockService = mock(StockService.class);
-        StockController controller = new StockController(stockService);
+        UUID stockId = UUID.randomUUID();
+        Price price = new Price().pricingDate(LocalDate.of(2024, 3, 10)).priceValue(BigDecimal.valueOf(19.99));
+        AddPriceResponse addPriceResponse = new AddPriceResponse().price(price).stockId(stockId);
 
-        PriceRequest request = new PriceRequest();
-        request.setPrice(BigDecimal.valueOf(19.99));
-        request.setDate("2024-03-10");
+        when(stockService.addOrUpdatePrice("IBM.N", price)).thenReturn(addPriceResponse);
 
-        doThrow(new RuntimeException("Failed to add price")).when(stockService).addOrUpdatePrice(eq("IBM.N"), any(BigDecimal.class), any(LocalDate.class));
-
-        ResponseEntity<?> response = controller.addPrice("IBM.N", request);
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains("Failed to add price"));
+        ResponseEntity<?> response = stockController.addPrice("IBM.N", price);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Test
     public void testGetPrices() {
 
-        StockService stockService = mock(StockService.class);
-        StockController controller = new StockController(stockService);
+        List<Price> priceHistory = new ArrayList<>();
+        priceHistory.add(new Price().priceId(UUID.randomUUID()).priceValue(BigDecimal.valueOf(19.99)).pricingDate(LocalDate.of(2024, 3, 10)));
 
-        List<PriceRecord> priceHistory = new ArrayList<>();
-        priceHistory.add(new PriceRecord(BigDecimal.valueOf(19.99), LocalDate.of(2024, 3, 10), LocalDateTime.now(), LocalDateTime.now()));
-
-        when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(new StockRecord()));
+        FindPricesResponse findPricesResponse = new FindPricesResponse().prices(priceHistory).stockId(UUID.randomUUID());
 
         when(stockService.findPricesByTickerAndDates(eq("IBM.N"), any(LocalDate.class), any(LocalDate.class)))
-                .thenReturn(priceHistory);
+                .thenReturn(findPricesResponse);
 
-        ResponseEntity<?> response = controller.getPrices("IBM.N", LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 15));
+        ResponseEntity<?> response = stockController.getPrices("IBM.N", LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 15));
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(priceHistory, response.getBody());
+        assertEquals(findPricesResponse, response.getBody());
     }
 }

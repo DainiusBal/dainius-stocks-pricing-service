@@ -1,5 +1,9 @@
 package com.balionis.dainius.sps.service;
 
+import com.balionis.dainius.sps.generated.model.AddPriceResponse;
+import com.balionis.dainius.sps.generated.model.FindPricesResponse;
+import com.balionis.dainius.sps.generated.model.Price;
+import com.balionis.dainius.sps.generated.model.Stock;
 import com.balionis.dainius.sps.model.PriceRecord;
 import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.repository.StockRepository;
@@ -12,6 +16,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class StockServiceImpl implements StockService {
@@ -26,7 +31,7 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public StockRecord addOrUpdateStock(StockRecord stock) {
+    public Stock addOrUpdateStock(Stock stock) {
         Optional<StockRecord> existingStock = stockRepository.findByTicker(stock.getTicker());
 
         StockRecord record = existingStock.map(r -> {
@@ -43,25 +48,33 @@ public class StockServiceImpl implements StockService {
 
         StockRecord savedStock = stockRepository.save(record);
 
-        return savedStock;
+        return new Stock().stockId(UUID.fromString(savedStock.getStockId()))
+                .ticker(savedStock.getTicker())
+                .description(savedStock.getDescription())
+                .sharesOutstanding(savedStock.getSharesOutstanding());
     }
 
     @Override
-    public List<StockRecord> findStocksByTicker(String ticker) {
+    public List<Stock> findStocksByTicker(String ticker) {
         List<StockRecord> records = Strings.isBlank(ticker)
                 ? stockRepository.findAll()
                 : stockRepository.findByTickerContaining(ticker);
 
-        return records;
+        return records.stream().map(r ->
+                new Stock().stockId(UUID.fromString(r.getStockId()))
+                        .ticker(r.getTicker())
+                        .description(r.getDescription())
+                        .sharesOutstanding(r.getSharesOutstanding())
+        ).toList();
     }
 
     @Override
-    public PriceRecord addOrUpdatePrice(String ticker, BigDecimal priceValue, LocalDate pricingDate) {
-        Optional<PriceRecord> existingPrice = priceRepository.findByTickerAndPricingDate(ticker, pricingDate);
+    public AddPriceResponse addOrUpdatePrice(String ticker, Price price) {
+        Optional<PriceRecord> existingPrice = priceRepository.findByTickerAndPricingDate(ticker, price.getPricingDate());
 
         PriceRecord updatedRecord = existingPrice.map(r -> {
-            r.setPriceValue(priceValue);
-            r.setPricingDate(pricingDate);
+            r.setPriceValue(price.getPriceValue());
+            r.setPricingDate(price.getPricingDate());
             return r;
         }).orElseGet(() -> {
             Optional<StockRecord> existingStock = stockRepository.findByTicker(ticker);
@@ -69,17 +82,29 @@ public class StockServiceImpl implements StockService {
 
             PriceRecord r = new PriceRecord();
             r.setStock(stock);
-            r.setPriceValue(priceValue);
-            r.setPricingDate(pricingDate);
+            r.setPriceValue(price.getPriceValue());
+            r.setPricingDate(price.getPricingDate());
             return r;
         });
         PriceRecord savedPrice = priceRepository.save(updatedRecord);
 
-        return savedPrice;
+        return new AddPriceResponse().stockId(UUID.fromString(savedPrice.getStock().getStockId()))
+                .price(new Price().priceId(UUID.fromString(savedPrice.getPriceId()))
+                        .priceValue(savedPrice.getPriceValue())
+                        .pricingDate(savedPrice.getPricingDate()));
     }
 
     @Override
-    public List<PriceRecord> findPricesByTickerAndDates(String ticker, LocalDate fromDate, LocalDate toDate) {
-        return priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
+    public FindPricesResponse findPricesByTickerAndDates(String ticker, LocalDate fromDate, LocalDate toDate) {
+        List<PriceRecord> priceRecords = priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
+        List<Price> prices = priceRecords.stream().map(r ->
+                new Price().priceId(UUID.fromString(r.getPriceId()))
+                        .priceValue(r.getPriceValue())
+                        .pricingDate(r.getPricingDate())
+        ).toList();
+        UUID stockId = priceRecords.stream().findAny().map(r -> UUID.fromString(r.getStock().getStockId()))
+                .orElseThrow(() -> new IllegalStateException("price record without stock record"));
+
+        return  new FindPricesResponse().stockId(stockId).prices(prices);
     }
 }

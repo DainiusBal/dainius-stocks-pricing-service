@@ -1,5 +1,9 @@
 package com.balionis.dainius.sps.service;
 
+import com.balionis.dainius.sps.generated.model.AddPriceResponse;
+import com.balionis.dainius.sps.generated.model.FindPricesResponse;
+import com.balionis.dainius.sps.generated.model.Price;
+import com.balionis.dainius.sps.generated.model.Stock;
 import com.balionis.dainius.sps.model.PriceRecord;
 import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.repository.PriceRepository;
@@ -33,13 +37,15 @@ public class StockServiceImplTest {
     @Test
     void testAddOrUpdateStock_shouldAddStock() {
         String ticker = "AAPL";
-        StockRecord stock = new StockRecord(ticker, "New Description", 2000000);
+        StockRecord stockRecord = new StockRecord(ticker, "New Description", 2000000);
+        stockRecord.setStockId(UUID.randomUUID().toString());
 
         when(stockRepository.findByTicker(eq(ticker))).thenReturn(Optional.empty());
+        when(stockRepository.save(any(StockRecord.class))).thenReturn(stockRecord);
 
-        when(stockRepository.save(any(StockRecord.class))).thenReturn(stock);
+        Stock stock = new Stock().ticker(ticker).description("New Description").sharesOutstanding(2000000);
 
-        StockRecord result = stockService.addOrUpdateStock(stock);
+        Stock result = stockService.addOrUpdateStock(stock);
 
         assertEquals(stock.getDescription(), result.getDescription());
         assertEquals(stock.getSharesOutstanding(), result.getSharesOutstanding());
@@ -51,13 +57,18 @@ public class StockServiceImplTest {
     @Test
     void testAddOrUpdateStock_shouldUpdateStock() {
         String ticker = "AAPL";
+        UUID stockId = UUID.randomUUID();
         StockRecord updatedStock = new StockRecord(ticker, "Updated description", 128000000);
+        updatedStock.setStockId(stockId.toString());
         StockRecord existingStock = new StockRecord(ticker, "Old description", 1000000);
+        existingStock.setStockId(stockId.toString());
 
         when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(existingStock));
         when(stockRepository.save(existingStock)).thenReturn(updatedStock);
 
-        StockRecord result = stockService.addOrUpdateStock(updatedStock);
+        Stock stock = new Stock().ticker(ticker).description("Updated description").sharesOutstanding(128000000);
+
+        Stock result = stockService.addOrUpdateStock(stock);
 
         assertNotNull(result);
         assertEquals(updatedStock.getTicker(), result.getTicker());
@@ -72,51 +83,60 @@ public class StockServiceImplTest {
     public void testAddOrUpdatePrice_shouldUpdatePrice() {
         String ticker = "AAPL";
         StockRecord stock = new StockRecord(ticker, "Apple Inc.", 1000000);
+        stock.setStockId(UUID.randomUUID().toString());
+
         BigDecimal priceValue = BigDecimal.valueOf(200.50);
         LocalDate pricingDate = LocalDate.now();
 
-        PriceRecord price = new PriceRecord();
-        price.setStock(stock);
-        price.setPriceValue(priceValue);
-        price.setPricingDate(pricingDate);
+        PriceRecord priceRecord = new PriceRecord();
+        priceRecord.setStock(stock);
+        priceRecord.setPriceValue(priceValue);
+        priceRecord.setPricingDate(pricingDate);
+        priceRecord.setPriceId(UUID.randomUUID().toString());
 
-        when(priceRepository.findByTickerAndPricingDate(ticker, pricingDate)).thenReturn(Optional.of(price));
-        when(priceRepository.save(price)).thenReturn(price);
+        when(priceRepository.findByTickerAndPricingDate(ticker, pricingDate)).thenReturn(Optional.of(priceRecord));
+        when(priceRepository.save(priceRecord)).thenReturn(priceRecord);
 
-        PriceRecord result = stockService.addOrUpdatePrice(ticker, priceValue, pricingDate);
+        Price price = new Price().priceValue(priceValue).pricingDate(pricingDate);
+
+        AddPriceResponse result = stockService.addOrUpdatePrice(ticker, price);
 
         assertNotNull(result);
-        assertEquals(stock, result.getStock());
-        assertEquals(priceValue, result.getPriceValue());
-        assertEquals(pricingDate, result.getPricingDate());
+        assertEquals(stock.getStockId(), result.getStockId().toString());
+        assertEquals(priceValue, result.getPrice().getPriceValue());
+        assertEquals(pricingDate, result.getPrice().getPricingDate());
 
         verify(priceRepository).findByTickerAndPricingDate(ticker, pricingDate);
-        verify(priceRepository).save(price);
+        verify(priceRepository).save(priceRecord);
         verifyNoInteractions(stockRepository);
     }
 
     @Test
     public void testAddOrUpdatePrice_shouldAddPrice() {
         String ticker = "AAPL";
-        StockRecord stock = new StockRecord(ticker, "Apple Inc.", 1000000);
+        StockRecord stockRecord = new StockRecord(ticker, "Apple Inc.", 1000000);
+        stockRecord.setStockId(UUID.randomUUID().toString());
         BigDecimal priceValue = BigDecimal.valueOf(200);
         LocalDate pricingDate = LocalDate.now();
 
-        PriceRecord price = new PriceRecord();
-        price.setStock(stock);
-        price.setPriceValue(priceValue);
-        price.setPricingDate(pricingDate);
+        PriceRecord priceRecord = new PriceRecord();
+        priceRecord.setStock(stockRecord);
+        priceRecord.setPriceValue(priceValue);
+        priceRecord.setPricingDate(pricingDate);
+        priceRecord.setPriceId(UUID.randomUUID().toString());
 
-        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(stock));
+        Price price = new Price().priceValue(priceValue).pricingDate(pricingDate);
+
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(stockRecord));
         when(priceRepository.findByTickerAndPricingDate(ticker, pricingDate)).thenReturn(Optional.empty());
-        when(priceRepository.save(any(PriceRecord.class))).thenReturn(price);
+        when(priceRepository.save(any(PriceRecord.class))).thenReturn(priceRecord);
 
-        PriceRecord result = stockService.addOrUpdatePrice(ticker, priceValue, pricingDate);
+        AddPriceResponse result = stockService.addOrUpdatePrice(ticker, price);
 
         assertNotNull(result);
-        assertEquals(stock, result.getStock());
-        assertEquals(priceValue, result.getPriceValue());
-        assertEquals(pricingDate, result.getPricingDate());
+        assertEquals(stockRecord.getStockId(), result.getStockId().toString());
+        assertEquals(priceValue, result.getPrice().getPriceValue());
+        assertEquals(pricingDate, result.getPrice().getPricingDate());
 
         // verify(stockRepository).findByTicker(ticker);
         // verify(priceRepository).save(price);
@@ -127,27 +147,36 @@ public class StockServiceImplTest {
 
         String invalidTicker = "INVALID";
         BigDecimal priceValue = BigDecimal.valueOf(200.50);
-        LocalDate date = LocalDate.now();
+        LocalDate pricingDate = LocalDate.now();
+
+        Price price = new Price().pricingDate(pricingDate).priceValue(priceValue);
 
         assertThrows(RuntimeException.class, () ->
-                stockService.addOrUpdatePrice(invalidTicker, priceValue, date));
+                stockService.addOrUpdatePrice(invalidTicker, price));
     }
 
     @Test
     void testFindStocksByTicker() {
 
         String ticker = "AAPL";
+        String stockId = UUID.randomUUID().toString();
         StockRecord stock1 = new StockRecord("AAPL.N", "Apple Inc.", 1000000);
+        stock1.setStockId(stockId);
         StockRecord stock2 = new StockRecord("AAPL.L", "Apple Inc.", 900000);
+        stock2.setStockId(stockId);
         List<StockRecord> expectedStocks = Arrays.asList(stock1, stock2);
 
         when(stockRepository.findByTickerContaining(ticker)).thenReturn(expectedStocks);
 
-        List<StockRecord> result = stockService.findStocksByTicker(ticker);
+        List<Stock> result = stockService.findStocksByTicker(ticker);
 
         assertNotNull(result);
         assertEquals(2, result.size());
-        assertEquals(stock1, result.get(0));
+
+        Stock stock = result.get(0);
+        assertEquals(stock1.getTicker(), stock.getTicker());
+        assertEquals(stock2.getDescription(), stock.getDescription());
+        assertEquals(stock1.getSharesOutstanding(), stock.getSharesOutstanding());
 
         verify(stockRepository).findByTickerContaining(ticker);
     }
@@ -159,19 +188,21 @@ public class StockServiceImplTest {
         LocalDate fromDate = LocalDate.of(2023, 1, 1); // Example from date
         LocalDate toDate = LocalDate.of(2023, 1, 31); // Example to date
         StockRecord stock = new StockRecord();
+        stock.setStockId(UUID.randomUUID().toString());
         stock.setTicker(ticker);
 
         PriceRecord price = new PriceRecord();
         price.setStock(stock);
         price.setPricingDate(fromDate);
         price.setPriceValue(BigDecimal.valueOf(123));
+        price.setPriceId(UUID.randomUUID().toString());
 
         when(priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate)).thenReturn(List.of(price));
 
-        List<PriceRecord> result = stockService.findPricesByTickerAndDates(ticker, fromDate, toDate);
+        FindPricesResponse result = stockService.findPricesByTickerAndDates(ticker, fromDate, toDate);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
+        assertEquals(1, result.getPrices().size());
 
         verify(priceRepository).findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
     }
