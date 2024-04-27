@@ -4,12 +4,12 @@ import com.balionis.dainius.sps.model.PriceRecord;
 import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.repository.StockRepository;
 import com.balionis.dainius.sps.repository.PriceRepository;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,75 +27,59 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public StockRecord addOrUpdateStock(StockRecord stock) {
-        return stockRepository.save(stock);
-    }
+        Optional<StockRecord> existingStock = stockRepository.findByTicker(stock.getTicker());
 
+        StockRecord record = existingStock.map(r -> {
+            r.setDescription(stock.getDescription());
+            r.setSharesOutstanding(stock.getSharesOutstanding());
+            return r;
+        }).orElseGet(() -> {
+            StockRecord r = new StockRecord();
+            r.setTicker(stock.getTicker());
+            r.setDescription(stock.getDescription());
+            r.setSharesOutstanding(stock.getSharesOutstanding());
+            return r;
+        });
 
-    @Override
-    public StockRecord updateStock(String ticker, StockRecord updatedStock) {
-        System.out.println("Updating stock for ticker: " + ticker);
+        StockRecord savedStock = stockRepository.save(record);
 
-        Optional<StockRecord> existingStockOptional = stockRepository.findByTicker(ticker);
-        System.out.println("Existing stock: " + existingStockOptional);
-
-        if (existingStockOptional.isEmpty()) {
-            throw new RuntimeException("Stock with ticker " + ticker + " not found");
-        }
-
-        StockRecord existingStock =  existingStockOptional.get();
-        existingStock.setDescription(updatedStock.getDescription());
-        existingStock.setSharesOutstanding(updatedStock.getSharesOutstanding());
-        System.out.println("Updated stock: " + existingStock);
-
-        try {
-            StockRecord savedStock = stockRepository.save(existingStock);
-            System.out.println("Stock updated successfully: " + savedStock);
-            return savedStock;
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to update stock with ticker " + ticker, e);
-        }
-    }
-
-
-    @Override
-    public List<StockRecord> getAllStocks() {
-        return stockRepository.findAll();
-    }
-
-    @Override
-    public void addOrUpdatePrice(String ticker, BigDecimal priceValue, LocalDate date) {
-        Optional<StockRecord> stock = stockRepository.findByTicker(ticker);
-        if (stock.isPresent()) {
-            PriceRecord price = new PriceRecord();
-            price.setStock(stock.get());
-            price.setPriceValue(priceValue);
-            price.setPricingDate(date);
-            priceRepository.save(price);
-        } else {
-            throw new RuntimeException("Unknown ticker: " + ticker);
-        }
-    }
-
-
-    @Override
-    public List<PriceRecord> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate) {
-
-        Optional<StockRecord> stock = stockRepository.findByTicker(ticker);
-
-        if (stock.isPresent()) {
-            String stockId = stock.get().getStockId();
-            List<PriceRecord> prices = priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
-            return prices;
-        } else {
-            return Collections.emptyList();
-        }
+        return savedStock;
     }
 
     @Override
     public List<StockRecord> findStocksByTicker(String ticker) {
-        return stockRepository.findByTickerContaining(ticker);
+        List<StockRecord> records = Strings.isBlank(ticker)
+                ? stockRepository.findAll()
+                : stockRepository.findByTickerContaining(ticker);
+
+        return records;
     }
 
+    @Override
+    public PriceRecord addOrUpdatePrice(String ticker, BigDecimal priceValue, LocalDate pricingDate) {
+        Optional<PriceRecord> existingPrice = priceRepository.findByTickerAndPricingDate(ticker, pricingDate);
+
+        PriceRecord updatedRecord = existingPrice.map(r -> {
+            r.setPriceValue(priceValue);
+            r.setPricingDate(pricingDate);
+            return r;
+        }).orElseGet(() -> {
+            Optional<StockRecord> existingStock = stockRepository.findByTicker(ticker);
+            StockRecord stock = existingStock.orElseThrow(() -> new RuntimeException("Unknown ticker: " + ticker));
+
+            PriceRecord r = new PriceRecord();
+            r.setStock(stock);
+            r.setPriceValue(priceValue);
+            r.setPricingDate(pricingDate);
+            return r;
+        });
+        PriceRecord savedPrice = priceRepository.save(updatedRecord);
+
+        return savedPrice;
+    }
+
+    @Override
+    public List<PriceRecord> findPricesByTickerAndDates(String ticker, LocalDate fromDate, LocalDate toDate) {
+        return priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
+    }
 }
-
-
