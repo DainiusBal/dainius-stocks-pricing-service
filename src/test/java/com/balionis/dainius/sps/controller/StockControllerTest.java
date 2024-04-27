@@ -1,19 +1,15 @@
 package com.balionis.dainius.sps.controller;
 
-import com.balionis.dainius.sps.controller.StockController;
-import com.balionis.dainius.sps.model.Price;
-import com.balionis.dainius.sps.model.Stock;
+import com.balionis.dainius.sps.model.PriceRecord;
+import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.repository.StockRepository;
 import com.balionis.dainius.sps.service.PriceRequest;
 import com.balionis.dainius.sps.service.StockService;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
@@ -34,16 +30,13 @@ public class StockControllerTest {
     @Mock
     private StockService stockService;
 
-    @Mock
-    private StockRepository stockRepository;
-
     @InjectMocks
     private StockController stockController;
 
     @Test
     public void testGetStocks() {
         // Mock data
-        List<Stock> mockStocks = Collections.singletonList(new Stock("IBM.N", "International Business Machines", 98000000));
+        List<StockRecord> mockStocks = Collections.singletonList(new StockRecord("IBM.N", "International Business Machines", 98000000));
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(mockStocks);
 
@@ -70,11 +63,10 @@ public class StockControllerTest {
         assertEquals("No stocks found", response.getBody());
     }
 
-
     @Test
     public void testAddStockWhenStockDoesNotExist() {
         // Mock data for a new stock
-        Stock newStock = new Stock("IBM.N", "International Business Machines", 98000000);
+        StockRecord newStock = new StockRecord("IBM.N", "International Business Machines", 98000000);
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.emptyList());
 
@@ -89,7 +81,7 @@ public class StockControllerTest {
     @Test
     public void testAddStockWhenStockAlreadyExists() {
 
-        Stock existingStock = new Stock("IBM.N", "International Business Machines", 98000000);
+        StockRecord existingStock = new StockRecord("IBM.N", "International Business Machines", 98000000);
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(existingStock));
 
@@ -98,7 +90,6 @@ public class StockControllerTest {
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertEquals("A stock with ticker 'IBM.N' already exists.", response.getBody());
     }
-
 
     @Test
     public void testAddPrice_Success() {
@@ -133,18 +124,16 @@ public class StockControllerTest {
         assertTrue(response.getBody().toString().contains("Failed to add price"));
     }
 
-
-
     @Test
     public void testGetPrices() {
 
         StockService stockService = mock(StockService.class);
         StockController controller = new StockController(stockService);
 
-        List<Price> priceHistory = new ArrayList<>();
-        priceHistory.add(new Price(BigDecimal.valueOf(19.99), LocalDate.of(2024, 3, 10), LocalDateTime.now(), LocalDateTime.now()));
+        List<PriceRecord> priceHistory = new ArrayList<>();
+        priceHistory.add(new PriceRecord(BigDecimal.valueOf(19.99), LocalDate.of(2024, 3, 10), LocalDateTime.now(), LocalDateTime.now()));
 
-        when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(new Stock()));
+        when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(new StockRecord()));
 
         when(stockService.getPriceHistory(eq("IBM.N"), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(priceHistory);
@@ -159,10 +148,10 @@ public class StockControllerTest {
     void testUpdateStock() {
 
         String ticker = "AAPL";
-        Stock updatedStock = new Stock(ticker, "Updated Description", 2000000);
+        StockRecord updatedStock = new StockRecord(ticker, "Updated Description", 2000000);
         when(stockService.updateStock(ticker, updatedStock)).thenReturn(updatedStock);
 
-        ResponseEntity<Stock> responseEntity = stockController.updateStock(ticker, updatedStock);
+        ResponseEntity<StockRecord> responseEntity = stockController.updateStock(ticker, updatedStock);
 
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
         assertEquals(updatedStock, responseEntity.getBody());

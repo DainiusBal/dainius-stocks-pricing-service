@@ -10,7 +10,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "prices")
-public class Price {
+public class PriceRecord {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -20,7 +20,7 @@ public class Price {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn(name = "stock_id")
-    private Stock stock;
+    private StockRecord stock;
 
     @Column(name = "pricing_date")
     private LocalDate pricingDate;
@@ -34,10 +34,10 @@ public class Price {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Price(){
+    public PriceRecord(){
     }
 
-    public Price(BigDecimal priceValue, LocalDate pricingDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
+    public PriceRecord(BigDecimal priceValue, LocalDate pricingDate, LocalDateTime createdAt, LocalDateTime updatedAt) {
         this.priceValue = priceValue;
         this.pricingDate = pricingDate;
         this.createdAt = createdAt;
@@ -64,7 +64,7 @@ public class Price {
         return priceId;
     }
 
-    public Stock getStock() {
+    public StockRecord getStock() {
         return stock;
     }
 
@@ -87,7 +87,7 @@ public class Price {
 
     public void setPriceId(String priceId) { this.priceId = priceId; }
 
-    public void setStock(Stock stock) {
+    public void setStock(StockRecord stock) {
         this.stock = stock;
     }
 

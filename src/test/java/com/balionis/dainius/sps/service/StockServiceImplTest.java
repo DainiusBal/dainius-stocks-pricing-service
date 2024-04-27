@@ -1,40 +1,28 @@
 package com.balionis.dainius.sps.service;
 
-
-import com.balionis.dainius.sps.controller.StockController;
-import com.balionis.dainius.sps.model.Price;
-import com.balionis.dainius.sps.model.Stock;
+import com.balionis.dainius.sps.model.PriceRecord;
+import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.repository.PriceRepository;
 import com.balionis.dainius.sps.repository.StockRepository;
-import com.balionis.dainius.sps.service.StockServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.util.ReflectionTestUtils;
-import java.util.UUID;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.*;
 
-
+@ExtendWith(MockitoExtension.class)
 public class StockServiceImplTest {
 
     @Mock
     private StockRepository stockRepository;
-
-    @Mock
-    private StockController stockController;
 
     @Mock
     private PriceRepository priceRepository;
@@ -42,28 +30,21 @@ public class StockServiceImplTest {
     @InjectMocks
     private StockServiceImpl stockService;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.initMocks(this);
-    }
-
-
-
     @Test
     void testUpdateStock() {
         // Arrange
         String ticker = "AAPL";
-        Stock updatedStock = new Stock(ticker, "Updated Description", 2000000);
+        StockRecord updatedStock = new StockRecord(ticker, "Updated Description", 2000000);
 
         // Mock the behavior of stockRepository.findByTicker() to return an existing stock
-        Stock existingStock = new Stock(ticker, "Existing Stock", 1000000);
-        when(stockRepository.findByTicker(ticker)).thenReturn(existingStock);
+        StockRecord existingStock = new StockRecord(ticker, "Existing Stock", 1000000);
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(existingStock));
 
         // Mock the behavior of stockRepository.save() to return the updated stock
         when(stockRepository.save(existingStock)).thenReturn(updatedStock);
 
         // Act
-        Stock result = stockService.updateStock(ticker, updatedStock);
+        StockRecord result = stockService.updateStock(ticker, updatedStock);
 
         // Assert
         assertEquals(updatedStock.getDescription(), result.getDescription());
@@ -76,39 +57,34 @@ public class StockServiceImplTest {
         verify(stockRepository, times(1)).save(existingStock);
     }
 
-
-
-
-
     @Test
     void testAddOrUpdateStock() {
         // Arrange
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
         when(stockRepository.save(stock)).thenReturn(stock);
 
         // Act
-        Stock result = stockService.addOrUpdateStock(stock);
+        StockRecord result = stockService.addOrUpdateStock(stock);
 
         // Assert
         assertEquals(stock, result);
         verify(stockRepository, times(1)).save(stock);
     }
 
-
     @Test
     void testUpdateExistingStock() {
         // Arrange
         String ticker = "AAPL";
-        Stock updatedStock = new Stock(ticker, "Updated description", 128000000);
-        Stock existingStock = new Stock(ticker, "Old description", 1000000);
+        StockRecord updatedStock = new StockRecord(ticker, "Updated description", 128000000);
+        StockRecord existingStock = new StockRecord(ticker, "Old description", 1000000);
 
         // Mock the behavior of stockRepository.findByTicker
-        when(stockRepository.findByTicker(ticker)).thenReturn(existingStock);
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(existingStock));
         // Mock the behavior of stockRepository.save
         when(stockRepository.save(existingStock)).thenReturn(updatedStock);
 
         // Act
-        Stock result = stockService.updateStock(ticker, updatedStock);
+        StockRecord result = stockService.updateStock(ticker, updatedStock);
 
         // Assert
         assertNotNull(result);
@@ -119,12 +95,11 @@ public class StockServiceImplTest {
         verify(stockRepository, times(1)).save(existingStock);
     }
 
-
     @Test
     void testUpdateNonExistingStock() {
         // Arrange
         String ticker = "AAPL";
-        Stock updatedStock = new Stock(ticker, "Updated description", 128000000);
+        StockRecord updatedStock = new StockRecord(ticker, "Updated description", 128000000);
 
         when(stockRepository.findByTicker(ticker)).thenReturn(null);
 
@@ -133,23 +108,22 @@ public class StockServiceImplTest {
         verify(stockRepository, never()).save(updatedStock);
     }
 
-
     @Test
     public void testGetAllStocks() {
 
-        Stock stock1 = new Stock();
+        StockRecord stock1 = new StockRecord();
         stock1.setTicker("AAPL");
         stock1.setDescription("Apple Inc.");
         stock1.setSharesOutstanding(1000000);
 
-        Stock stock2 = new Stock();
+        StockRecord stock2 = new StockRecord();
         stock2.setTicker("GOOGL");
         stock2.setDescription("Alphabet Inc.");
         stock2.setSharesOutstanding(500000);
 
         when(stockRepository.findAll()).thenReturn(Arrays.asList(stock1, stock2));
 
-        List<Stock> result = stockService.getAllStocks();
+        List<StockRecord> result = stockService.getAllStocks();
 
         assertEquals(2, result.size());
         assertEquals("AAPL", result.get(0).getTicker());
@@ -162,16 +136,15 @@ public class StockServiceImplTest {
         verify(stockRepository, times(1)).findAll();
     }
 
-
     @Test
     public void testAddOrUpdatePrice_WithValidTicker_ShouldAddPrice() {
         // Arrange
         String ticker = "AAPL";
-        Stock stock = new Stock(ticker, "Apple Inc.", 1000000);
+        StockRecord stock = new StockRecord(ticker, "Apple Inc.", 1000000);
         BigDecimal priceValue = BigDecimal.valueOf(200.50);
         LocalDate date = LocalDate.now();
 
-        when(stockRepository.findByTicker(ticker)).thenReturn(stock);
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(stock));
 
         // Act
         stockService.addOrUpdatePrice(ticker, priceValue, date);
@@ -182,8 +155,6 @@ public class StockServiceImplTest {
                         price.getPricingDate().equals(date)));
     }
 
-
-
     @Test
     public void testAddOrUpdatePrice_WithInvalidTicker_ShouldThrowException() {
 
@@ -191,24 +162,21 @@ public class StockServiceImplTest {
         BigDecimal priceValue = BigDecimal.valueOf(200.50);
         LocalDate date = LocalDate.now();
 
-        when(stockRepository.findByTicker(invalidTicker)).thenReturn(null);
-
         assertThrows(RuntimeException.class, () ->
                 stockService.addOrUpdatePrice(invalidTicker, priceValue, date));
     }
-
 
     @Test
     void testFindStocksByTicker() {
 
         String ticker = "AAPL";
-        Stock stock1 = new Stock(ticker, "Apple Inc.", 1000000);
-        Stock stock2 = new Stock("GOOGL", "Alphabet Inc.", 500000);
-        List<Stock> expectedStocks = Arrays.asList(stock1);
+        StockRecord stock1 = new StockRecord(ticker, "Apple Inc.", 1000000);
+        StockRecord stock2 = new StockRecord("GOOGL", "Alphabet Inc.", 500000);
+        List<StockRecord> expectedStocks = Arrays.asList(stock1);
 
         when(stockRepository.findByTickerContaining(ticker)).thenReturn(expectedStocks);
 
-        List<Stock> result = stockService.findStocksByTicker(ticker);
+        List<StockRecord> result = stockService.findStocksByTicker(ticker);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -216,16 +184,13 @@ public class StockServiceImplTest {
         verify(stockRepository, times(1)).findByTickerContaining(ticker);
     }
 
-
-
-
     @Test
-    void testGetPriceHistoryWhenStockFoundWithNoPrices() {
+    void testGetPriceHistory_WhenStockFoundWithNoPrices() {
         // Create and persist a stock with no associated prices
-        Stock stock = new Stock("AAPL", "Apple Inc.", 1000000);
+        StockRecord stock = new StockRecord("AAPL", "Apple Inc.", 1000000);
         stockRepository.save(stock);
 
-        List<Price> result = stockService.getPriceHistory("AAPL", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31));
+        List<PriceRecord> result = stockService.getPriceHistory("AAPL", LocalDate.of(2022, 1, 1), LocalDate.of(2022, 12, 31));
 
         assertNotNull(result);
         assertTrue(result.isEmpty());
@@ -234,23 +199,20 @@ public class StockServiceImplTest {
         verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(String.class), any(LocalDate.class), any(LocalDate.class));
     }
 
-
-
     @Test
-    public void testGetPriceHistory_WhenStockFound() {
+    void testGetPriceHistory_WhenStockFound() {
 
         String ticker = "AAPL";
         LocalDate fromDate = LocalDate.of(2023, 1, 1); // Example from date
         LocalDate toDate = LocalDate.of(2023, 1, 31); // Example to date
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
 
-        when(stockRepository.findByTicker(ticker)).thenReturn(stock);
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(stock));
 
-        List<Price> result = stockService.getPriceHistory(ticker, fromDate, toDate);
+        List<PriceRecord> result = stockService.getPriceHistory(ticker, fromDate, toDate);
 
         verify(priceRepository, times(1)).findByStockIdAndPricingDateBetween(stock.getStockId(), fromDate, toDate);
     }
-
 
     @Test
     public void testGetPriceHistory_WhenStockNotFound() {
@@ -259,18 +221,11 @@ public class StockServiceImplTest {
         LocalDate fromDate = LocalDate.of(2023, 1, 1); // Example from date
         LocalDate toDate = LocalDate.of(2023, 1, 31); // Example to date
 
-        when(stockRepository.findByTicker(ticker)).thenReturn(null);
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.empty());
 
-        List<Price> result = stockService.getPriceHistory(ticker, fromDate, toDate);
+        List<PriceRecord> result = stockService.getPriceHistory(ticker, fromDate, toDate);
 
         assertEquals(Collections.emptyList(), result);
         verify(priceRepository, never()).findByStockIdAndPricingDateBetween(any(String.class), any(LocalDate.class), any(LocalDate.class));
     }
-
-
 }
-
-
-
-
-

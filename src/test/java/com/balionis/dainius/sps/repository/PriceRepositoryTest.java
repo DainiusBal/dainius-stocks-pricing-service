@@ -4,13 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.balionis.dainius.sps.repository.PriceRepository;
-import com.balionis.dainius.sps.model.Price;
-import com.balionis.dainius.sps.model.Stock;
-import com.balionis.dainius.sps.repository.StockRepository;
+import com.balionis.dainius.sps.model.PriceRecord;
+import com.balionis.dainius.sps.model.StockRecord;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +18,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @DataJpaTest
+@ActiveProfiles("test")
 public class PriceRepositoryTest {
 
     @Autowired
@@ -34,11 +34,11 @@ public class PriceRepositoryTest {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         LocalDateTime specificTime = LocalDateTime.of(2024, 4, 16, 10, 0, 0);
 
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
         stock.setTicker("AAPL");
-        Stock savedStock = stockRepository.save(stock);
+        StockRecord savedStock = stockRepository.save(stock);
 
-        Price priceToday = new Price();
+        PriceRecord priceToday = new PriceRecord();
         priceToday.setStock(savedStock);
         priceToday.setPricingDate(today);
         priceToday.setPriceValue(BigDecimal.valueOf(123.45));
@@ -46,7 +46,7 @@ public class PriceRepositoryTest {
         priceToday.setUpdatedAt(specificTime);
         priceRepository.save(priceToday);
 
-        Price priceTomorrow = new Price();
+        PriceRecord priceTomorrow = new PriceRecord();
         priceTomorrow.setStock(savedStock);
         priceTomorrow.setPricingDate(tomorrow);
         priceTomorrow.setPriceValue(BigDecimal.valueOf(112.12));
@@ -54,15 +54,15 @@ public class PriceRepositoryTest {
         priceTomorrow.setUpdatedAt(specificTime);
         priceRepository.save(priceTomorrow);
 
-        List<Price> resultBothDates = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, tomorrow);
+        List<PriceRecord> resultBothDates = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, tomorrow);
 
         assertEquals(List.of(priceToday, priceTomorrow), resultBothDates);
 
-        List<Price> resultToday = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, today);
+        List<PriceRecord> resultToday = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, today);
 
         assertEquals(List.of(priceToday), resultToday);
 
-        Price resultPriceToday = resultToday.get(0);
+        PriceRecord resultPriceToday = resultToday.get(0);
         assertEquals(today, resultPriceToday.getPricingDate());
         assertThat(resultPriceToday.getPriceValue()).isCloseTo(BigDecimal.valueOf(123.45), within(BigDecimal.valueOf(0.01)));
 
@@ -75,16 +75,16 @@ public class PriceRepositoryTest {
 
         LocalDateTime now = LocalDateTime.now();
 
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
         stock.setTicker("AAPL");
-        Stock savedStock = stockRepository.save(stock);
+        StockRecord savedStock = stockRepository.save(stock);
 
-        Price price = new Price();
+        PriceRecord price = new PriceRecord();
         price.setStock(savedStock);
         price.setPricingDate(LocalDate.now());
         price.setPriceValue(BigDecimal.valueOf(123.45));
 
-        Price savedPrice = priceRepository.save(price);
+        PriceRecord savedPrice = priceRepository.save(price);
 
         assertThat(savedPrice.getCreatedAt()).isCloseTo(now, within(10, ChronoUnit.SECONDS));
         assertThat(savedPrice.getUpdatedAt()).isCloseTo(now, within(10, ChronoUnit.SECONDS));
@@ -94,7 +94,7 @@ public class PriceRepositoryTest {
         savedPrice.setPriceValue(BigDecimal.valueOf(121.12));
         // IMPORTANT! Price.onUpdate is not getting called when calling just "save". Hence, setting it explicitly.
         savedPrice.setUpdatedAt(LocalDateTime.now().plusNanos(100));
-        Price updatedPrice = priceRepository.saveAndFlush(savedPrice);
+        PriceRecord updatedPrice = priceRepository.saveAndFlush(savedPrice);
 
         assertThat(updatedPrice.getPriceValue()).isCloseTo(BigDecimal.valueOf(121.12), within(BigDecimal.valueOf(0.01)));
         assertThat(updatedPrice.getUpdatedAt()).isAfter(savedPriceUpdatedAt);
@@ -103,13 +103,13 @@ public class PriceRepositoryTest {
     @Test
     void testToString() {
 
-        Price price = new Price();
+        PriceRecord price = new PriceRecord();
         price.setPricingDate(LocalDate.now());
         price.setPriceValue(BigDecimal.valueOf(123.45));
 
         assertThat(price.toString()).isNotEmpty();
 
-        Stock stock = new Stock();
+        StockRecord stock = new StockRecord();
         stock.setTicker("AAPL");
         price.setStock(stock);
 

@@ -1,8 +1,8 @@
 package com.balionis.dainius.sps.controller;
 
 import com.balionis.dainius.sps.service.PriceRequest;
-import com.balionis.dainius.sps.model.Price;
-import com.balionis.dainius.sps.model.Stock;
+import com.balionis.dainius.sps.model.PriceRecord;
+import com.balionis.dainius.sps.model.StockRecord;
 import com.balionis.dainius.sps.service.StockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -25,28 +25,28 @@ public class StockController {
     }
 
     @PostMapping
-    public ResponseEntity<?> addStock(@RequestBody Stock stock) {
+    public ResponseEntity<?> addStock(@RequestBody StockRecord stock) {
 
-        List<Stock> existingStocks = stockService.findStocksByTicker(stock.getTicker());
+        List<StockRecord> existingStocks = stockService.findStocksByTicker(stock.getTicker());
         if (!existingStocks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("A stock with ticker '" + stock.getTicker() + "' already exists.");
         }
 
         // Assuming the ID is generated as a UUID in the service layer
-        Stock createdStock = stockService.addOrUpdateStock(stock);
+        StockRecord createdStock = stockService.addOrUpdateStock(stock);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdStock);
     }
 
     @PostMapping("/{ticker}")
-    public ResponseEntity<Stock> updateStock(@PathVariable String ticker, @RequestBody Stock stock) {
-        Stock updatedStock = stockService.updateStock(ticker, stock);
+    public ResponseEntity<StockRecord> updateStock(@PathVariable String ticker, @RequestBody StockRecord stock) {
+        StockRecord updatedStock = stockService.updateStock(ticker, stock);
         return ResponseEntity.ok(updatedStock);
     }
 
     @GetMapping
     public ResponseEntity<?> getStocks(@RequestParam(required = false) String ticker) {
-        List<Stock> stocks;
+        List<StockRecord> stocks;
         if (ticker == null || ticker.isEmpty() || ticker.equals("*")) {
             stocks = stockService.getAllStocks();
         } else {
@@ -74,13 +74,13 @@ public class StockController {
             @PathVariable String ticker,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fromDate,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate toDate) {
-        List<Stock> existingStocks = stockService.findStocksByTicker(ticker);
+        List<StockRecord> existingStocks = stockService.findStocksByTicker(ticker);
         if (existingStocks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Stock with ticker '" + ticker + "' not found.");
         }
 
-        List<Price> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
+        List<PriceRecord> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }
 }
