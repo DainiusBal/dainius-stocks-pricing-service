@@ -101,7 +101,15 @@ public class StockControllerTest {
         request.setPrice(BigDecimal.valueOf(19.99));
         request.setDate("2024-03-10");
 
-        doNothing().when(stockService).addOrUpdatePrice(eq("IBM.N"), any(BigDecimal.class), any(LocalDate.class));
+        StockRecord stock = new StockRecord();
+        stock.setTicker("IBM.N");
+
+        PriceRecord price = new PriceRecord();
+        price.setStock(stock);
+        price.setPriceValue(request.getPrice());
+        price.setPricingDate(request.getDate());
+
+        when(stockService.addOrUpdatePrice("IBM.N", BigDecimal.valueOf(19.99), LocalDate.of(2024, 3, 10))).thenReturn(price);
 
         ResponseEntity<?> response = controller.addPrice("IBM.N", request);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
@@ -135,7 +143,7 @@ public class StockControllerTest {
 
         when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(new StockRecord()));
 
-        when(stockService.getPriceHistory(eq("IBM.N"), any(LocalDate.class), any(LocalDate.class)))
+        when(stockService.findPricesByTickerAndDates(eq("IBM.N"), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(priceHistory);
 
         ResponseEntity<?> response = controller.getPrices("IBM.N", LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 15));
@@ -143,23 +151,4 @@ public class StockControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(priceHistory, response.getBody());
     }
-
-    @Test
-    void testUpdateStock() {
-
-        String ticker = "AAPL";
-        StockRecord updatedStock = new StockRecord(ticker, "Updated Description", 2000000);
-        when(stockService.updateStock(ticker, updatedStock)).thenReturn(updatedStock);
-
-        ResponseEntity<StockRecord> responseEntity = stockController.updateStock(ticker, updatedStock);
-
-        assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-        assertEquals(updatedStock, responseEntity.getBody());
-    }
-    
 }
-
-
-
-
-

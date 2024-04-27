@@ -10,9 +10,7 @@ import java.util.List;
 public interface StockService {
 
     StockRecord addOrUpdateStock(StockRecord stock);
-    StockRecord updateStock(String ticker, StockRecord stock);
     List<StockRecord> findStocksByTicker(String ticker);
-    List<StockRecord> getAllStocks();
-    void addOrUpdatePrice(String ticker, BigDecimal price, LocalDate date);
-    List<PriceRecord> getPriceHistory(String ticker, LocalDate fromDate, LocalDate toDate);
+    PriceRecord addOrUpdatePrice(String ticker,BigDecimal priceValue, LocalDate date);
+    List<PriceRecord> findPricesByTickerAndDates(String ticker, LocalDate fromDate, LocalDate toDate);
 }

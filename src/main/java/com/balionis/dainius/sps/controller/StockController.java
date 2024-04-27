@@ -40,18 +40,13 @@ public class StockController {
 
     @PostMapping("/{ticker}")
     public ResponseEntity<StockRecord> updateStock(@PathVariable String ticker, @RequestBody StockRecord stock) {
-        StockRecord updatedStock = stockService.updateStock(ticker, stock);
+        StockRecord updatedStock = stockService.addOrUpdateStock(stock);
         return ResponseEntity.ok(updatedStock);
     }
 
     @GetMapping
     public ResponseEntity<?> getStocks(@RequestParam(required = false) String ticker) {
-        List<StockRecord> stocks;
-        if (ticker == null || ticker.isEmpty() || ticker.equals("*")) {
-            stocks = stockService.getAllStocks();
-        } else {
-            stocks = stockService.findStocksByTicker(ticker);
-        }
+        List<StockRecord> stocks = stockService.findStocksByTicker(ticker);
         if (stocks.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No stocks found");
         } else {
@@ -80,7 +75,7 @@ public class StockController {
                     .body("Stock with ticker '" + ticker + "' not found.");
         }
 
-        List<PriceRecord> priceHistory = stockService.getPriceHistory(ticker, fromDate, toDate);
+        List<PriceRecord> priceHistory = stockService.findPricesByTickerAndDates(ticker, fromDate, toDate);
         return ResponseEntity.ok(priceHistory);
     }
 }
