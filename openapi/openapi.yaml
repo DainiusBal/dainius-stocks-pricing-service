@@ -4,38 +4,18 @@ info:
   version: 1.0.0
   description: API for managing stocks
 
+servers:
+  - url: https://dainius.balionis.com/sps/api/1.0.0
+tags:
+  - name: stock
+
 paths:
   /api/v1/stocks:
-    get:
-      summary: Retrieve all stocks
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StockList'
-          x-examples:
-            successfulResponse:
-              summary: Example of a successful response
-              value:
-                - ticker: "AAPL"
-                  description: "Apple Inc."
-                  sharesOutstanding: 100000000
-        default:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          x-examples:
-            errorResponse:
-              summary: Example of an error response
-              value:
-                code: "500"
-                message: "Internal Server Error"
     post:
+      operationId: addStock
       summary: Add a new stock
+      tags:
+        - stock
       requestBody:
         required: true
         content:
@@ -49,35 +29,24 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Stock'
-          x-examples:
-            successfulResponse:
-              summary: Example of a successful response
-              value:
-                ticker: "GOOGL"
-                description: "Alphabet Inc."
-                sharesOutstanding: 200000000
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          x-examples:
-            errorResponse:
-              summary: Example of an error response
-              value:
-                code: "400"
-                message: "Bad Request"
 
-  '/api/v1/stocks/{ticker}':
-    parameters:
-      - in: path
-        name: ticker
-        required: true
-        schema:
-          type: string
     get:
+      operationId: findStocksByTicker
       summary: Retrieve stocks matching the ticker
+      tags:
+        - stock
+      parameters:
+        - in: path
+          name: ticker
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: OK
@@ -85,25 +54,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StockList'
-          x-examples:
-            successfulResponse:
-              summary: Example of a successful response
-              value:
-                - ticker: "MSFT"
-                  description: "Microsoft Corporation"
-                  sharesOutstanding: 150000000
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          x-examples:
-            errorResponse:
-              summary: Example of an error response
-              value:
-                code: "404"
-                message: "Not Found"
 
   '/api/v1/stocks/{ticker}/prices':
     parameters:
@@ -113,7 +69,10 @@ paths:
         schema:
           type: string
     post:
+      operationId: addPrice
       summary: Add a new price for a stock
+      tags:
+        - stock
       requestBody:
         required: true
         content:
@@ -126,28 +85,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Price'
-          x-examples:
-            successfulResponse:
-              summary: Example of a successful response
-              value:
-                price: 25.99
-                date: "2024-04-09"
+                $ref: '#/components/schemas/AddPriceResponse'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          x-examples:
-            errorResponse:
-              summary: Example of an error response
-              value:
-                code: "403"
-                message: "Forbidden"
 
     get:
+      operationId: findPricesByDateRange
       summary: Get prices for a stock within a date range
+      tags:
+        - stock
       parameters:
         - in: query
           name: fromDate
@@ -167,31 +117,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PriceList'
-          x-examples:
-            successfulResponse:
-              summary: Example of a successful response
-              value:
-                - price: 25.99
-                  date: "2024-04-09"
+                $ref: '#/components/schemas/FindPricesResponse'
         default:
           description: Unexpected error
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
-          x-examples:
-            errorResponse:
-              summary: Example of an error response
-              value:
-                code: "500"
-                message: "Internal Server Error"
 
 components:
   schemas:
     Stock:
       type: object
       properties:
+        stockId:
+          type: string
+          format: UUID
         ticker:
           type: string
         description:
@@ -207,9 +148,12 @@ components:
     Price:
       type: object
       properties:
-        price:
+        priceId:
+          type: string
+          format: UUID
+        priceValue:
           type: number
-        date:
+        pricingDate:
           type: string
           format: date
 
@@ -225,3 +169,21 @@ components:
           type: string
         message:
           type: string
+
+    AddPriceResponse:
+      type: object
+      properties:
+        price:
+          $ref: '#/components/schemas/Price'
+        stockId:
+          type: string
+          format: UUID
+
+    FindPricesResponse:
+      type: object
+      properties:
+        prices:
+          $ref: '#/components/schemas/PriceList'
+        stockId:
+          type: string
+          format: UUID

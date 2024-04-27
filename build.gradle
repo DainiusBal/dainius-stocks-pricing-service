@@ -21,7 +21,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-	implementation 'org.liquibase:liquibase-core:4.21.1'
+	testImplementation 'org.liquibase:liquibase-core:4.21.1'
 	implementation 'mysql:mysql-connector-java:8.0.28'
 
 	testImplementation 'com.h2database:h2'
@@ -32,6 +32,10 @@ dependencies {
 	testImplementation 'org.springframework:spring-test'
 	testImplementation 'org.mock-server:mockserver-netty:5.11.2'
 	testImplementation 'org.mock-server:mockserver-client-java:5.11.2'
+
+	implementation("io.swagger.core.v3:swagger-annotations:2.2.20")
+	implementation("javax.validation:validation-api:2.0.1.Final")
+	implementation("javax.annotation:javax.annotation-api:1.3.2")
 }
 
 tasks.named('test') {
@@ -86,14 +90,47 @@ tasks.register('liquibaseRollbackOne', JavaExec) {
 			'1'
 }
 
-
-openApiGenerate {
-	inputSpec.set(file('openapi/openapi.yaml').absolutePath)
-	outputDir.set(file('generatedAPI').absolutePath)
-	generatorName = 'openapi'
-	validateSpec = false
+openApiValidate {
+	inputSpec = "$rootDir/openapi/openapi.yaml"
 }
 
+openApiGenerate {
+	generatorName = "spring"
+	inputSpec = "$rootDir/openapi/openapi.yaml"
+	outputDir = "$buildDir/generated"
+	apiPackage = "com.balionis.dainius.sps.generated.api"
+	modelPackage= "com.balionis.dainius.sps.generated.model"
+	configOptions.set([
+			"dateLibrary": "java8",
+			"generateApis": "true",
+			"generateApiTests": "false",
+			"generateModels": "true",
+			"generateModelTests": "false",
+			"generateModelDocumentation": "false",
+			"generateSupportingFiles": "false",
+			"hideGenerationTimestamp": "true",
+			"interfaceOnly": "true",
+			"library": "spring-boot",
+			"serializableModel": "true",
+			"useBeanValidation": "true",
+			"useTags": "true",
+			"implicitHeaders": "true",
+			"openApiNullable": "false",
+			"oas3": "true"
+	])
+}
+
+tasks.compileJava {
+	dependsOn(tasks.openApiValidate, tasks.openApiGenerate)
+}
+
+sourceSets {
+	main {
+		java {
+			srcDirs("$buildDir/generated/src/main/java")
+		}
+	}
+}
 
 tasks.register('dockerBuild', Exec) {
 	dependsOn('bootJar')
