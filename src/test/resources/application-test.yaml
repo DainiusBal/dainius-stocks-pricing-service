@@ -21,3 +21,6 @@ logging:
         boot:
           autoconfigure:
             jdbc: DEBUG
+
+server:
+  port: 0

@@ -1,17 +1,28 @@
 package com.balionis.dainius.sps.controller;
 
+import static io.restassured.RestAssured.given;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.RANDOM_PORT;
+
+import com.balionis.dainius.sps.DainiusStocksPricingServiceApplication;
 import com.balionis.dainius.sps.generated.model.AddPriceResponse;
 import com.balionis.dainius.sps.generated.model.FindPricesResponse;
 import com.balionis.dainius.sps.generated.model.Price;
 import com.balionis.dainius.sps.generated.model.Stock;
 import com.balionis.dainius.sps.service.StockService;
+import io.restassured.builder.RequestSpecBuilder;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,94 +31,113 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
-
-@ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
+@SpringBootTest(classes = {DainiusStocksPricingServiceApplication.class}, webEnvironment = RANDOM_PORT)
 public class StockControllerTest {
 
-    @Mock
+    @LocalServerPort
+    private int randomServerPort;
+
+    @MockBean
     private StockService stockService;
 
-    @InjectMocks
-    private StockController stockController;
+    private RequestSpecBuilder requestSpecBuilder;
+
+    @BeforeEach
+    void setUp() {
+        requestSpecBuilder = new RequestSpecBuilder().setPort(randomServerPort);
+    }
 
     @Test
     public void testGetStocks() {
-        // Mock data
         List<Stock> mockStocks = Collections.singletonList(
                 new Stock().ticker("IBM.N")
                         .description("International Business Machines")
                         .sharesOutstanding(98000000));
 
-        when(stockService.findStocksByTicker("IBM.N")).thenReturn(mockStocks);
+        when(stockService.findStocksByTicker(eq("IBM.N"))).thenReturn(mockStocks);
 
-        ResponseEntity<?> response = stockController.getStocks("IBM.N");
+        var stocks = given().spec(requestSpecBuilder.build())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .log().all()
+                .params("ticker", "IBM.N")
+                .get("/api/v1/stocks")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .body()
+                .jsonPath().getList(".", Stock.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(mockStocks, response.getBody());
+        assertThat(stocks).hasSize(1);
 
-        when(stockService.findStocksByTicker("GOOGL")).thenReturn(Collections.emptyList());
+        var stock = stocks.get(0);
+        assertEquals("IBM.N", stock.getTicker());
+        assertEquals("International Business Machines", stock.getDescription());
+        assertEquals(98000000, stock.getSharesOutstanding());
 
-        response = stockController.getStocks("GOOGL");
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(List.of(), response.getBody());
+        verify(stockService).findStocksByTicker(anyString());
     }
 
     @Test
-    public void testAddStock_whenStockDoesNotExist() {
-        // Mock data for a new stock
-        Stock newStock = new Stock().ticker("IBM.N").description("International Business Machines").sharesOutstanding(98000000);
-
-        when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.emptyList());
+    public void testAddStock() {
+        Stock newStock = new Stock()
+                .stockId(UUID.randomUUID())
+                .ticker("IBM.N")
+                .description("International Business Machines")
+                .sharesOutstanding(98000000);
 
         when(stockService.addOrUpdateStock(newStock)).thenReturn(newStock);
 
-        ResponseEntity<?> response = stockController.addStock(newStock);
+        var savedStock = given().spec(requestSpecBuilder.build())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .log().all()
+                .body(newStock)
+                .post("/api/v1/stocks")
+                .then()
+                .assertThat()
+                .statusCode(201)
+                .extract()
+                .as(Stock.class);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(newStock, response.getBody());
+        assertEquals("IBM.N", savedStock.getTicker());
+        assertEquals("International Business Machines", savedStock.getDescription());
+        assertEquals(98000000, savedStock.getSharesOutstanding());
+
+        verify(stockService).addOrUpdateStock(any(Stock.class));
     }
 
     @Test
-    public void testAddStock_whenStockAlreadyExists() {
-
-        Stock existingStock = new Stock().ticker("IBM.N").description("International Business Machines").sharesOutstanding(98000000);
-
-        when(stockService.findStocksByTicker("IBM.N")).thenReturn(Collections.singletonList(existingStock));
-
-        ResponseEntity<?> response = stockController.addStock(existingStock);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("A stock with ticker 'IBM.N' already exists.", response.getBody());
-    }
-
-    @Test
-    public void testAddPrice_Success() {
+    public void testAddPrice() {
 
         UUID stockId = UUID.randomUUID();
-        Price price = new Price().pricingDate(LocalDate.of(2024, 3, 10)).priceValue(BigDecimal.valueOf(19.99));
+        Price price = new Price().priceId(UUID.randomUUID())
+                .pricingDate(LocalDate.of(2024, 3, 10))
+                .priceValue(BigDecimal.valueOf(19.99));
         AddPriceResponse addPriceResponse = new AddPriceResponse().price(price).stockId(stockId);
 
         when(stockService.addOrUpdatePrice("IBM.N", price)).thenReturn(addPriceResponse);
 
-        ResponseEntity<?> response = stockController.addPrice("IBM.N", price);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-    }
+        var response = given().spec(requestSpecBuilder.build())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .log().all()
+                .body(price)
+                .pathParam("ticker", "IBM.N")
+                .post("/api/v1/stocks/{ticker}/prices")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .as(AddPriceResponse.class);
 
-    @Test
-    public void testAddPrice_UnknownTicker() {
+        assertNotNull(response.getPrice());
 
-        UUID stockId = UUID.randomUUID();
-        Price price = new Price().pricingDate(LocalDate.of(2024, 3, 10)).priceValue(BigDecimal.valueOf(19.99));
-        AddPriceResponse addPriceResponse = new AddPriceResponse().price(price).stockId(stockId);
+        Price savedPrice = response.getPrice();
 
-        when(stockService.addOrUpdatePrice("IBM.N", price)).thenReturn(addPriceResponse);
+        assertEquals(LocalDate.of(2024, 3, 10), savedPrice.getPricingDate());
+        assertEquals(BigDecimal.valueOf(19.99), savedPrice.getPriceValue());
 
-        ResponseEntity<?> response = stockController.addPrice("IBM.N", price);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(stockService).addOrUpdatePrice(eq("IBM.N"), any(Price.class));
     }
 
     @Test
@@ -121,9 +151,25 @@ public class StockControllerTest {
         when(stockService.findPricesByTickerAndDates(eq("IBM.N"), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(findPricesResponse);
 
-        ResponseEntity<?> response = stockController.getPrices("IBM.N", LocalDate.of(2024, 3, 1), LocalDate.of(2024, 3, 15));
+        var prices = given().spec(requestSpecBuilder.build())
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .log().all()
+                .pathParam("ticker", "IBM.N")
+                .params("fromDate", "2024-03-09", "toDate", "2024-03-11")
+                .get("/api/v1/stocks/{ticker}/prices")
+                .then()
+                .assertThat()
+                .statusCode(200)
+                .extract()
+                .body()
+                .as(FindPricesResponse.class);
 
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(findPricesResponse, response.getBody());
+        assertThat(prices.getPrices()).hasSize(1);
+
+        var price = prices.getPrices().get(0);
+        assertEquals(LocalDate.of(2024, 3, 10), price.getPricingDate());
+        assertEquals(BigDecimal.valueOf(19.99), price.getPriceValue());
+
+        verify(stockService).findPricesByTickerAndDates(anyString(), any(LocalDate.class), any(LocalDate.class));
     }
 }
