@@ -159,11 +159,10 @@ public class StockServiceImplTest {
     void testFindStocksByTicker() {
 
         String ticker = "AAPL";
-        String stockId = UUID.randomUUID().toString();
         StockRecord stock1 = new StockRecord("AAPL.N", "Apple Inc.", 1000000);
-        stock1.setStockId(stockId);
+        stock1.setStockId(UUID.randomUUID().toString());
         StockRecord stock2 = new StockRecord("AAPL.L", "Apple Inc.", 900000);
-        stock2.setStockId(stockId);
+        stock2.setStockId(UUID.randomUUID().toString());
         List<StockRecord> expectedStocks = Arrays.asList(stock1, stock2);
 
         when(stockRepository.findByTickerContaining(ticker)).thenReturn(expectedStocks);
@@ -179,6 +178,31 @@ public class StockServiceImplTest {
         assertEquals(stock1.getSharesOutstanding(), stock.getSharesOutstanding());
 
         verify(stockRepository).findByTickerContaining(ticker);
+    }
+
+    @Test
+    void testFindStocksByTicker_emptyTicker() {
+
+        String ticker = "";
+        StockRecord stock1 = new StockRecord("AAPL.N", "Apple Inc.", 1000000);
+        stock1.setStockId(UUID.randomUUID().toString());
+        StockRecord stock2 = new StockRecord("AAPL.L", "Apple Inc.", 900000);
+        stock2.setStockId(UUID.randomUUID().toString());
+        List<StockRecord> expectedStocks = Arrays.asList(stock1, stock2);
+
+        when(stockRepository.findAll()).thenReturn(expectedStocks);
+
+        List<Stock> result = stockService.findStocksByTicker(ticker);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+
+        Stock stock = result.get(0);
+        assertEquals(stock1.getTicker(), stock.getTicker());
+        assertEquals(stock2.getDescription(), stock.getDescription());
+        assertEquals(stock1.getSharesOutstanding(), stock.getSharesOutstanding());
+
+        verify(stockRepository).findAll();
     }
 
     @Test
@@ -207,5 +231,20 @@ public class StockServiceImplTest {
         assertEquals(1, result.getPrices().size());
 
         verify(priceRepository).findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
+    }
+
+    @Test
+    void testFindPricesByTickerAndDates_unknownStock() {
+
+        String ticker = "AAPL";
+        LocalDate fromDate = LocalDate.of(2023, 1, 1); // Example from date
+        LocalDate toDate = LocalDate.of(2023, 1, 31); // Example to date
+
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () ->
+            stockService.findPricesByTickerAndDates(ticker, fromDate, toDate));
+
+        verify(stockRepository).findByTicker(ticker);
     }
 }

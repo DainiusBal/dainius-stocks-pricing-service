@@ -50,9 +50,17 @@ tasks.jacocoTestReport {
 		html.outputLocation = layout.buildDirectory.dir("jacoco-html")
 	}
 
+	afterEvaluate {
+		classDirectories = files(classDirectories.files.collect {
+			fileTree(dir: it,
+					exclude: ['**/generated/**',
+							  '**/com/balionis/dainius/sps/model/**',
+							  '**/DainiusStocksPricingServiceApplication**'])
+		})
+	}
+
 	dependsOn(tasks.test)
 }
-
 
 tasks.register('liquibaseUpdate', JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
