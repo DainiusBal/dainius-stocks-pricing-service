@@ -54,7 +54,7 @@ curl -X GET http://localhost:8080/api/v1/stocks?ticker="IB"
 
 To add a new price for a stock, use the following command:
 ```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"ticker\":\"IBM.N\",\"price\":19.99,\"date\":\"2024-03-10\"}" http://localhost:8080/api/v1/stocks/IBM.N/prices
+curl -X POST -H "Content-Type: application/json" -d "{\"ticker\":\"IBM.N\",\"priceValue\":19.99,\"pricingDate\":\"2024-03-10\"}" http://localhost:8080/api/v1/stocks/IBM.N/prices
 
 ### Get Prices for a Stock Within a Date Range
 ```

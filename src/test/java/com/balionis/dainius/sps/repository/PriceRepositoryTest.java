@@ -54,11 +54,11 @@ public class PriceRepositoryTest {
         priceTomorrow.setUpdatedAt(specificTime);
         priceRepository.save(priceTomorrow);
 
-        List<PriceRecord> resultBothDates = priceRepository.findByTickerAndPricingDateBetween(savedStock.getTicker(), today, tomorrow);
+        List<PriceRecord> resultBothDates = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, tomorrow);
 
         assertEquals(List.of(priceToday, priceTomorrow), resultBothDates);
 
-        List<PriceRecord> resultToday = priceRepository.findByTickerAndPricingDateBetween(savedStock.getTicker(), today, today);
+        List<PriceRecord> resultToday = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, today);
 
         assertEquals(List.of(priceToday), resultToday);
 

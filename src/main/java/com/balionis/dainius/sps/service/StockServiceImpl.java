@@ -95,15 +95,16 @@ public class StockServiceImpl implements StockService {
 
     @Override
     public FindPricesResponse findPricesByTickerAndDates(String ticker, LocalDate fromDate, LocalDate toDate) {
-        List<PriceRecord> priceRecords = priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
+        Optional<StockRecord> existingStock = stockRepository.findByTicker(ticker);
+        StockRecord stock = existingStock.orElseThrow(() -> new RuntimeException("Unknown ticker: " + ticker));
+
+        List<PriceRecord> priceRecords = priceRepository.findByStockIdAndPricingDateBetween(stock.getStockId(), fromDate, toDate);
         List<Price> prices = priceRecords.stream().map(r ->
                 new Price().priceId(UUID.fromString(r.getPriceId()))
                         .priceValue(r.getPriceValue())
                         .pricingDate(r.getPricingDate())
         ).toList();
-        UUID stockId = priceRecords.stream().findAny().map(r -> UUID.fromString(r.getStock().getStockId()))
-                .orElseThrow(() -> new IllegalStateException("price record without stock record"));
 
-        return  new FindPricesResponse().stockId(stockId).prices(prices);
+        return  new FindPricesResponse().stockId(UUID.fromString(stock.getStockId())).prices(prices);
     }
 }
