@@ -151,13 +151,12 @@ tasks.register("dockerComposeUp") {
 }
 
 
-tasks.register('dockerComposeDown', Exec) {
+tasks.register('dockerComposeDown') {
 	description = "Stop a service on local docker"
 	group = "Docker"
 	doLast {
 		exec {
-			workingDir = file(projectDir)
-			commandLine 'docker-compose', '-f', 'docker-compose.yaml', 'down'
+			commandLine "docker-compose", "-f", "docker-compose.yaml", "down"
 		}
 	}
 }

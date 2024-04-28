@@ -185,10 +185,11 @@ public class StockServiceImplTest {
     void testFindPricesByTickerAndDates() {
 
         String ticker = "AAPL";
+        String stockId = UUID.randomUUID().toString();
         LocalDate fromDate = LocalDate.of(2023, 1, 1); // Example from date
         LocalDate toDate = LocalDate.of(2023, 1, 31); // Example to date
         StockRecord stock = new StockRecord();
-        stock.setStockId(UUID.randomUUID().toString());
+        stock.setStockId(stockId);
         stock.setTicker(ticker);
 
         PriceRecord price = new PriceRecord();
@@ -197,13 +198,14 @@ public class StockServiceImplTest {
         price.setPriceValue(BigDecimal.valueOf(123));
         price.setPriceId(UUID.randomUUID().toString());
 
-        when(priceRepository.findByTickerAndPricingDateBetween(ticker, fromDate, toDate)).thenReturn(List.of(price));
+        when(stockRepository.findByTicker(ticker)).thenReturn(Optional.of(stock));
+        when(priceRepository.findByStockIdAndPricingDateBetween(stockId, fromDate, toDate)).thenReturn(List.of(price));
 
         FindPricesResponse result = stockService.findPricesByTickerAndDates(ticker, fromDate, toDate);
 
         assertNotNull(result);
         assertEquals(1, result.getPrices().size());
 
-        verify(priceRepository).findByTickerAndPricingDateBetween(ticker, fromDate, toDate);
+        verify(priceRepository).findByStockIdAndPricingDateBetween(stockId, fromDate, toDate);
     }
 }
