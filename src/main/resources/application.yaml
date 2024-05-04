@@ -8,6 +8,12 @@ spring:
   liquibase:
     enabled: false
 
+  jpa:
+    properties:
+      hibernate:
+        show_sql: false
+        generate_statistics: false
+
 logging:
   level:
     org:

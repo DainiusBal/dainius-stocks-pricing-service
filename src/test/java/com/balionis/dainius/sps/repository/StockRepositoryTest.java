@@ -1,6 +1,7 @@
 package com.balionis.dainius.sps.repository;
 
 import com.balionis.dainius.sps.model.StockRecord;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -11,6 +12,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Slf4j
 @DataJpaTest
 @ActiveProfiles("test")
 public class StockRepositoryTest {
@@ -24,7 +26,7 @@ public class StockRepositoryTest {
         String ticker = "AAPL";
         LocalDateTime specificTime = LocalDateTime.of(2024, 4, 16, 10, 0, 0);
 
-        System.out.println("Specified time: " + specificTime);
+        log.info("specificTime={}", specificTime);
 
         StockRecord stock = new StockRecord();
         stock.setTicker(ticker);
