@@ -33,6 +33,7 @@ services:
       INSTALL_MYSQL: true
     volumes:
       - ./src/main/resources/db/changelog:/liquibase/changelog
+      - ./src/main/resources/db/changeset:/liquibase/db/changeset
     command: update --url=jdbc:mysql://mysql:3306/dainius_db?user=root'&'password=1234 --changelog-file=changelog/db.changelog-master.yaml
     depends_on:
       mysql:

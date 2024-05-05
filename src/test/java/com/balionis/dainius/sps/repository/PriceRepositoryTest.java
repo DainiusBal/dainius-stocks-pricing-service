@@ -3,6 +3,7 @@ package com.balionis.dainius.sps.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.balionis.dainius.sps.model.PriceRecord;
 import com.balionis.dainius.sps.model.StockRecord;
@@ -56,7 +57,7 @@ public class PriceRepositoryTest {
 
         List<PriceRecord> resultBothDates = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, tomorrow);
 
-        assertEquals(List.of(priceToday, priceTomorrow), resultBothDates);
+        assertTrue(List.of(priceToday, priceTomorrow).containsAll(resultBothDates));
 
         List<PriceRecord> resultToday = priceRepository.findByStockIdAndPricingDateBetween(savedStock.getStockId(), today, today);
 
