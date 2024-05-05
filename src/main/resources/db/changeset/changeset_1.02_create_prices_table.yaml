@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: DBAL-0022-create-prices-table
+      author: liquibase
+      changes:
+        - createTable:
+            tableName: prices
+            encoding: UTF-8
+            columns:
+              - column:
+                  name: price_id
+                  type: CHAR(36)
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: stock_id
+                  type: CHAR(36)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: pricing_date
+                  type: date
+                  constraints:
+                    nullable: false
+              - column:
+                  name: price
+                  type: decimal(10,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+                    defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  constraints:
+                    nullable: false
+                    defaultValueComputed: CURRENT_TIMESTAMP
+            constraints:
+              primaryKey:
+                columns: price_id
+              foreignKeyConstraints:
+                - baseColumnNames: stock_id
+                  referencedTableName: stocks
+                  referencedColumnNames: stock_id
+                  constraintName: fk_prices_stocks
+      rollback:
+        - dropTable:
+            tableName: prices

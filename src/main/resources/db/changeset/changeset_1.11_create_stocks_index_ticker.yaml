@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: DBAL-0022-create-stocks-index-ticker
+      author: liquibase
+      changes:
+        - createIndex:
+            indexName: idx_stocks_ticker
+            tableName: stocks
+            encoding: UTF-8
+            columns:
+              - column:
+                  name: ticker
+                  descending:  true
+            unique:  true
+      rollback:
+        - dropIndex:
+            tableName: idx_stocks_ticker

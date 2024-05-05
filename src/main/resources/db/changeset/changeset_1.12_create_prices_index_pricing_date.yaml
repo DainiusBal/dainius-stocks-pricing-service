@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: DBAL-0022-create-prices-index-pricing-date
+      author: liquibase
+      changes:
+        - createIndex:
+            indexName: idx_prices_pricing_date
+            tableName: prices
+            encoding: UTF-8
+            columns:
+              - column:
+                  name: stock_id
+              - column:
+                  name: pricing_date
+                  descending:  true
+      rollback:
+        - dropIndex:
+            tableName: idx_prices_pricing_date

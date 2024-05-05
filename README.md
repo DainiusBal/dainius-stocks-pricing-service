@@ -22,7 +22,13 @@ To start the service using Docker, navigate to the project root directory and ru
 
 To add a new stock, use the following command:
 ```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"ticker\":\"IBM.N\",\"description\":\"International Business Machines\",\"sharesOutstanding\":98000000}" http://localhost:8080/api/v1/stocks
+curl -X POST http://localhost:8080/api/v1/stocks \
+-H "Content-Type: application/json" \
+-d '{
+  "ticker":"IBM.N",
+  "description":"International Business Machines",
+  "sharesOutstanding":98000000
+}' 
 ```
 ### Get All Stocks
 
@@ -34,19 +40,24 @@ curl -X GET http://localhost:8080/api/v1/stocks
 
 To retrieve stocks matching a specific ticker, use the following command:
 ```bash
-curl -X GET http://localhost:8080/api/v1/stocks?ticker=IBM.N
+curl -X GET 'http://localhost:8080/api/v1/stocks?ticker=IBM.N'
 ```
 ### Update an Existing Stock
 
 To update an existing stock, use the following command:
 ```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"description\":\"Updated description\",\"sharesOutstanding\":128000000}" http://localhost:8080/api/v1/stocks/IBM.N
+curl -X POST http://localhost:8080/api/v1/stocks/IBM.N \
+-H "Content-Type: application/json" \
+-d '{
+  "description":"Updated description",
+  "sharesOutstanding":128000000
+}' 
 ```
 ### Get Stocks Matching the Ticker Pattern
 
 To retrieve stocks matching a ticker pattern, use the following command:
 ```bash
-curl -X GET http://localhost:8080/api/v1/stocks?ticker="IB"
+curl -X GET 'http://localhost:8080/api/v1/stocks?ticker=IB'
 ```
 ## Price Service
 
@@ -54,11 +65,17 @@ curl -X GET http://localhost:8080/api/v1/stocks?ticker="IB"
 
 To add a new price for a stock, use the following command:
 ```bash
-curl -X POST -H "Content-Type: application/json" -d "{\"ticker\":\"IBM.N\",\"priceValue\":19.99,\"pricingDate\":\"2024-03-10\"}" http://localhost:8080/api/v1/stocks/IBM.N/prices
+curl -X POST http://localhost:8080/api/v1/stocks/IBM.N/prices \
+-H "Content-Type: application/json" \
+-d '{
+  "ticker":"IBM.N",
+  "priceValue":19.90,
+  "pricingDate":"2024-03-11"
+}' 
 
 ### Get Prices for a Stock Within a Date Range
 ```
 To retrieve prices for a stock within a specific date range, use the following command:
 ```bash
-curl -X GET "http://localhost:8080/api/v1/stocks/IBM.N/prices?fromDate=2024-03-01&toDate=2029-05-03"
+curl -X GET 'http://localhost:8080/api/v1/stocks/IBM.N/prices?fromDate=2024-03-01&toDate=2029-05-01'
 ```
